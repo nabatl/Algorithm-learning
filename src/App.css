@@ -597,6 +597,7 @@
 /* 全屏模式下的样式 */
 .example-code pre:fullscreen {
   background-color: #111;
+  color: #e0e0e0;
   width: 100%;
   height: 100%;
   padding: 2rem;
@@ -605,12 +606,14 @@
   border-radius: 0;
   margin: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow: auto;
 }
 
 .example-code pre:-webkit-full-screen {
   background-color: #111;
+  color: #e0e0e0;
   width: 100%;
   height: 100%;
   padding: 2rem;
@@ -619,12 +622,14 @@
   border-radius: 0;
   margin: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow: auto;
 }
 
 .example-code pre:-ms-fullscreen {
   background-color: #111;
+  color: #e0e0e0;
   width: 100%;
   height: 100%;
   padding: 2rem;
@@ -633,8 +638,45 @@
   border-radius: 0;
   margin: 0;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
+  overflow: auto;
+}
+
+/* 浅色模式下的全屏样式 */
+@media (prefers-color-scheme: light) {
+  .example-code pre:fullscreen {
+    background-color: #ffffff;
+    color: #333333;
+  }
+  
+  .example-code pre:-webkit-full-screen {
+    background-color: #ffffff;
+    color: #333333;
+  }
+  
+  .example-code pre:-ms-fullscreen {
+    background-color: #ffffff;
+    color: #333333;
+  }
+}
+
+/* 移动设备全屏样式 */
+@media (max-width: 768px) {
+  .example-code pre:fullscreen {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+  
+  .example-code pre:-webkit-full-screen {
+    padding: 1rem;
+    font-size: 1rem;
+  }
+  
+  .example-code pre:-ms-fullscreen {
+    padding: 1rem;
+    font-size: 1rem;
+  }
 }
 
 .user-code {
