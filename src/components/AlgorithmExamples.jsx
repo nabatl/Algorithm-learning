@@ -24,6 +24,14 @@ function AlgorithmExamples() {
     setSelectedExample(example)
     // 标记为已阅读
     setReadExamples(prev => new Set(prev).add(example.id))
+    
+    // 自动滚动到example-detail部分
+    setTimeout(() => {
+      const detailElement = document.querySelector('.example-detail');
+      if (detailElement) {
+        detailElement.scrollIntoView({ behavior: 'smooth' });
+      }
+    }, 100);
   }
 
   // 过滤示例列表
@@ -121,7 +129,40 @@ function AlgorithmExamples() {
             </div>
             
             <div className="example-code">
-              <h5>JavaScript 代码：</h5>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <h5>JavaScript 代码：</h5>
+                <button 
+                  onClick={() => {
+                    const codeElement = document.querySelector('.example-code pre');
+                    if (codeElement.requestFullscreen) {
+                      codeElement.requestFullscreen();
+                    } else if (codeElement.webkitRequestFullscreen) {
+                      codeElement.webkitRequestFullscreen();
+                    } else if (codeElement.msRequestFullscreen) {
+                      codeElement.msRequestFullscreen();
+                    }
+                    
+                    // 检测是否为移动设备
+                    if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                      // 尝试强制横屏
+                      screen.orientation.lock('landscape').catch(err => {
+                        console.log('无法强制横屏:', err);
+                      });
+                    }
+                  }}
+                  style={{
+                    background: '#646cff',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    padding: '4px 8px',
+                    cursor: 'pointer',
+                    fontSize: '0.8rem'
+                  }}
+                >
+                  全屏展示
+                </button>
+              </div>
               <pre>{selectedExample.code}</pre>
             </div>
             

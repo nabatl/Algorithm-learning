@@ -594,6 +594,49 @@
   line-height: 1.4;
 }
 
+/* 全屏模式下的样式 */
+.example-code pre:fullscreen {
+  background-color: #111;
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  border-radius: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.example-code pre:-webkit-full-screen {
+  background-color: #111;
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  border-radius: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.example-code pre:-ms-fullscreen {
+  background-color: #111;
+  width: 100%;
+  height: 100%;
+  padding: 2rem;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  border-radius: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
 .user-code {
   flex: 1;
 }
@@ -734,15 +777,67 @@
 @media (max-width: 768px) {
   .examples-container {
     flex-direction: column;
-    height: auto;
+    height: 100vh;
   }
   
   .examples-list {
-    max-height: 300px;
+    max-height: 200px;
+    overflow-y: auto;
   }
   
   .example-detail {
-    min-height: 500px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .app-header h1 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+  
+  .nav-tabs {
+    gap: 0.5rem;
+  }
+  
+  .nav-tab {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+  
+  .algorithm-examples {
+    padding: 0.5rem;
+  }
+  
+  .examples-list {
+    padding: 0.5rem;
+  }
+  
+  .example-detail {
+    padding: 0.8rem;
+  }
+  
+  .example-description p {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  
+  .example-code pre {
+    font-size: 0.8rem;
+    padding: 0.8rem;
+  }
+  
+  .test-case {
+    padding: 0.5rem;
+    font-size: 0.9rem;
+  }
+  
+  .navigation-buttons {
+    margin-top: 1rem;
+  }
+  
+  .nav-button {
+    padding: 0.5rem 1rem;
+    font-size: 0.8rem;
   }
 }
 
