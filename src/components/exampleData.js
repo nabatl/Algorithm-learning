@@ -47,6 +47,51 @@ export const examples = [
   
   // 返回最长公共前缀
   return longestPrefix;
+}`,
+    javaCode: `public class Solution {
+    public static String findLongestCommonTownName(String[] names) {
+        // 处理边界情况：如果名字列表为空，返回空字符串
+        if (names == null || names.length == 0) {
+            return "";
+        }
+        
+        // 找出最短的名字作为参考，因为最长公共前缀的长度不可能超过最短名字的长度
+        String shortestName = names[0];
+        for (String name : names) {
+            if (name.length() < shortestName.length()) {
+                shortestName = name;
+            }
+        }
+        
+        // 存储最长公共前缀
+        StringBuilder longestPrefix = new StringBuilder();
+        
+        // 遍历最短名字的每个字符
+        for (int i = 0; i < shortestName.length(); i++) {
+            // 获取当前位置的字符
+            char currentChar = shortestName.charAt(i);
+            
+            // 检查所有名字是否在相同位置有相同的字符
+            boolean allMatch = true;
+            for (String name : names) {
+                if (name.charAt(i) != currentChar) {
+                    allMatch = false;
+                    break;
+                }
+            }
+            
+            // 如果所有名字在当前位置都有相同的字符，将其添加到最长公共前缀中
+            if (allMatch) {
+                longestPrefix.append(currentChar);
+            } else {
+                // 如果有任何名字在当前位置的字符不同，停止遍历
+                break;
+            }
+        }
+        
+        // 返回最长公共前缀
+        return longestPrefix.toString();
+    }
 }`
   },
   {
@@ -148,6 +193,96 @@ export const examples = [
   
   // 返回平均等待时间
   return totalWaitingTime / n;
+}`,
+    javaCode: `import java.util.LinkedList;
+import java.util.Queue;
+
+public class Solution {
+    public static double calculateRoundRobinAverageWaitingTime(int[][] jobs, int quantum) {
+        int n = jobs.length;
+        
+        // 复制作业信息，包含到达时间、剩余运行时间和原始运行时间
+        int[] arrival = new int[n];
+        int[] remaining = new int[n];
+        int[] burst = new int[n];
+        boolean[] completed = new boolean[n];
+        
+        for (int i = 0; i < n; i++) {
+            arrival[i] = jobs[i][0];
+            remaining[i] = jobs[i][1];
+            burst[i] = jobs[i][1];
+            completed[i] = false;
+        }
+        
+        // 存储每个作业的等待时间
+        int[] waitingTimes = new int[n];
+        
+        // 就绪队列，存储等待执行的作业索引
+        Queue<Integer> queue = new LinkedList<>();
+        
+        // 当前时间
+        int currentTime = 0;
+        
+        // 已完成的作业数
+        int completedJobs = 0;
+        
+        // 下一个要处理的作业索引
+        int jobIndex = 0;
+        
+        // 主循环，直到所有作业完成
+        while (completedJobs < n) {
+            // 将到达时间小于等于当前时间的作业加入队列
+            while (jobIndex < n && arrival[jobIndex] <= currentTime) {
+                queue.offer(jobIndex);
+                jobIndex++;
+            }
+            
+            // 如果队列不为空，处理队首作业
+            if (!queue.isEmpty()) {
+                // 取出队首作业
+                int currentJobIndex = queue.poll();
+                
+                // 计算本次运行的时间：取时间片和剩余运行时间的最小值
+                int runTime = Math.min(quantum, remaining[currentJobIndex]);
+                
+                // 更新当前时间
+                currentTime += runTime;
+                
+                // 更新作业的剩余运行时间
+                remaining[currentJobIndex] -= runTime;
+                
+                // 将在本次运行期间到达的作业加入队列
+                while (jobIndex < n && arrival[jobIndex] <= currentTime) {
+                    queue.offer(jobIndex);
+                    jobIndex++;
+                }
+                
+                // 如果作业未完成，将其重新加入队列
+                if (remaining[currentJobIndex] > 0) {
+                    queue.offer(currentJobIndex);
+                } else {
+                    // 作业完成，计算等待时间
+                    // 等待时间 = 完成时间 - 到达时间 - 运行时间
+                    waitingTimes[currentJobIndex] = currentTime - arrival[currentJobIndex] - burst[currentJobIndex];
+                    completedJobs++;
+                }
+            } else {
+                // 如果队列为空，直接跳到下一个作业的到达时间
+                if (jobIndex < n) {
+                    currentTime = arrival[jobIndex];
+                }
+            }
+        }
+        
+        // 计算总等待时间
+        int totalWaitingTime = 0;
+        for (int time : waitingTimes) {
+            totalWaitingTime += time;
+        }
+        
+        // 返回平均等待时间
+        return (double) totalWaitingTime / n;
+    }
 }`
   },
   {
@@ -207,6 +342,58 @@ export const examples = [
   
   // 返回最少项目数
   return projects;
+}`,
+    javaCode: `public class Solution {
+    public static int minProjectsToClearErrors(int[] errorScores, int P, int Q) {
+        // 初始化项目数为0
+        int projects = 0;
+        
+        // 复制错误分数数组，避免修改原始数据
+        int[] scores = new int[errorScores.length];
+        for (int i = 0; i < errorScores.length; i++) {
+            scores[i] = errorScores[i];
+        }
+        
+        // 主循环，直到所有分数都为零
+        while (true) {
+            // 检查是否所有分数都为零或负数
+            boolean allZero = true;
+            for (int score : scores) {
+                if (score > 0) {
+                    allZero = false;
+                    break;
+                }
+            }
+            if (allZero) {
+                break;
+            }
+            
+            // 找到当前分数最高的成员
+            int maxIndex = 0;
+            for (int i = 1; i < scores.length; i++) {
+                if (scores[i] > scores[maxIndex]) {
+                    maxIndex = i;
+                }
+            }
+            
+            // 为该成员完成一个项目，项目数加1
+            projects++;
+            
+            // 更新所有成员的分数
+            for (int i = 0; i < scores.length; i++) {
+                if (i == maxIndex) {
+                    // 为完成项目的成员减少P分
+                    scores[i] -= P;
+                } else if (scores[i] > 0) {
+                    // 为其他分数大于0的成员减少Q分
+                    scores[i] -= Q;
+                }
+            }
+        }
+        
+        // 返回最少项目数
+        return projects;
+    }
 }`
   },
   {
@@ -276,6 +463,88 @@ export const examples = [
   
   // 返回最大输油量
   return maxFlow;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    static class Edge {
+        int node;
+        int capacity;
+        
+        Edge(int node, int capacity) {
+            this.node = node;
+            this.capacity = capacity;
+        }
+    }
+    
+    static int maxFlow;
+    
+    public static int maxOilTransport(int[][] tree) {
+        // 构建邻接表，用于存储树的结构
+        List<List<Edge>> adj = new ArrayList<>();
+        
+        // 确定最大节点编号
+        int maxNode = 0;
+        for (int[] edge : tree) {
+            maxNode = Math.max(maxNode, Math.max(edge[0], edge[1]));
+        }
+        
+        // 初始化邻接表
+        for (int i = 0; i <= maxNode; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        // 添加双向边，因为树是无向的
+        for (int[] edge : tree) {
+            int u = edge[0];
+            int v = edge[1];
+            int capacity = edge[2];
+            adj.get(u).add(new Edge(v, capacity));
+            adj.get(v).add(new Edge(u, capacity));
+        }
+        
+        // 初始化最大输油量
+        maxFlow = 0;
+        
+        // 从根节点（0）开始遍历
+        dfs(0, -1, adj);
+        
+        // 返回最大输油量
+        return maxFlow;
+    }
+    
+    private static int dfs(int node, int parent, List<List<Edge>> adj) {
+        // 当前节点的总流量
+        int currentFlow = 0;
+        
+        // 遍历当前节点的所有邻居
+        for (Edge edge : adj.get(node)) {
+            int neighbor = edge.node;
+            int capacity = edge.capacity;
+            
+            // 跳过父节点，避免循环
+            if (neighbor == parent) continue;
+            
+            // 递归计算子树的最大流量
+            int childFlow = dfs(neighbor, node, adj);
+            
+            // 取子树流量和当前管道容量的最小值，累加到当前流量
+            // 因为管道容量限制了能传输的油量
+            currentFlow += Math.min(childFlow, capacity);
+        }
+        
+        // 如果是叶节点（没有子节点），返回一个很大的值（表示可以接收无限流量）
+        if (currentFlow == 0) {
+            return Integer.MAX_VALUE;
+        }
+        
+        // 更新最大流量
+        maxFlow = Math.max(maxFlow, currentFlow);
+        
+        // 返回当前子树的最大流量
+        return currentFlow;
+    }
 }`
   },
   {
@@ -316,6 +585,29 @@ export const examples = [
   
   // 返回结果数组
   return result;
+}`,
+    javaCode: `public class Solution {
+    public static int[] replaceValuesWithIndexes(int[] nums) {
+        int n = nums.length;
+        
+        // 创建结果数组
+        int[] result = new int[n];
+        
+        // 创建值到索引的映射，用于快速查找每个值对应的索引
+        int[] valueToIndex = new int[n];
+        for (int i = 0; i < n; i++) {
+            valueToIndex[nums[i]] = i;
+        }
+        
+        // 替换每个值为其索引
+        // 对于每个位置i，我们需要找到值为i的元素的索引
+        for (int i = 0; i < n; i++) {
+            result[i] = valueToIndex[i];
+        }
+        
+        // 返回结果数组
+        return result;
+    }
 }`
   },
   {
@@ -373,6 +665,49 @@ export const examples = [
   
   // 返回最大蒸汽率
   return maxRate;
+}`,
+    javaCode: `public class Solution {
+    public static int maxVaporRate(int[] vaporRates) {
+        int n = vaporRates.length;
+        
+        // 初始化最大蒸汽率为0
+        int maxRate = 0;
+        
+        // 遍历所有可能的子数组长度
+        // 因为需要两组等长的子数组，所以长度最多为n/2
+        for (int length = 1; length <= n / 2; length++) {
+            // 遍历所有可能的起始位置
+            // 确保第二组子数组不会超出数组范围
+            for (int i = 0; i <= n - 2 * length; i++) {
+                // 提取第一组子数组
+                int[] firstSet = new int[length];
+                for (int j = 0; j < length; j++) {
+                    firstSet[j] = vaporRates[i + j];
+                }
+                
+                // 提取并反转第二组子数组
+                int[] reversedSecondSet = new int[length];
+                for (int j = 0; j < length; j++) {
+                    reversedSecondSet[j] = vaporRates[i + length + length - 1 - j];
+                }
+                
+                // 计算总蒸汽率
+                int totalRate = 0;
+                for (int j = 0; j < length; j++) {
+                    // 计算对应位置的乘积并累加到总蒸汽率
+                    totalRate += firstSet[j] * reversedSecondSet[j];
+                }
+                
+                // 更新最大蒸汽率
+                if (totalRate > maxRate) {
+                    maxRate = totalRate;
+                }
+            }
+        }
+        
+        // 返回最大蒸汽率
+        return maxRate;
+    }
 }`
   },
   {
@@ -406,6 +741,37 @@ export const examples = [
   
   // 合并两个部分并返回
   return [...firstK, ...remaining];
+}`,
+    javaCode: `import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+public class Solution {
+    public static int[] sortFirstKAscendingRemainingDescending(int[] nums, int K) {
+        int n = nums.length;
+        
+        // 对前K个元素进行升序排序
+        int[] firstK = Arrays.copyOfRange(nums, 0, K);
+        Arrays.sort(firstK);
+        
+        // 对剩余元素进行降序排序
+        Integer[] remainingArray = new Integer[n - K];
+        for (int i = 0; i < n - K; i++) {
+            remainingArray[i] = nums[K + i];
+        }
+        Arrays.sort(remainingArray, Collections.reverseOrder());
+        
+        // 合并两个部分
+        int[] result = new int[n];
+        System.arraycopy(firstK, 0, result, 0, K);
+        for (int i = 0; i < n - K; i++) {
+            result[K + i] = remainingArray[i];
+        }
+        
+        // 返回结果数组
+        return result;
+    }
 }`
   },
   {
@@ -446,6 +812,32 @@ export const examples = [
   
   // 返回幸运顾客数
   return count;
+}`,
+    javaCode: `import java.util.HashSet;
+import java.util.Set;
+
+public class Solution {
+    public static int countLuckyCustomers(int[] prices, int K) {
+        // 使用Set存储价格，去除重复值并提高查找效率
+        Set<Integer> priceSet = new HashSet<>();
+        for (int price : prices) {
+            priceSet.add(price);
+        }
+        
+        // 初始化幸运顾客数为0
+        int count = 0;
+        
+        // 遍历每个唯一价格
+        for (int price : priceSet) {
+            // 检查是否存在价格差为K的另一个价格
+            if (priceSet.contains(price + K)) {
+                count++;
+            }
+        }
+        
+        // 返回幸运顾客数
+        return count;
+    }
 }`
   },
   {
@@ -483,6 +875,26 @@ export const examples = [
   
   // 如果不是子串，返回-1
   return -1;
+}`,
+    javaCode: `public class Solution {
+    public static int isRightRotation(String word1, String word2) {
+        // 检查长度是否相同，如果长度不同，word1不可能是word2的右旋转
+        if (word1.length() != word2.length()) {
+            return -1;
+        }
+        
+        // 检查word1是否是word2 + word2的子串
+        // 原理：如果word1是word2的右旋转，那么它必定是word2 + word2的子串
+        // 例如：word2 = "sample", word2 + word2 = "samplesample"
+        // 所有右旋转版本（如"plesam"）都会在其中出现
+        String doubledWord2 = word2 + word2;
+        if (doubledWord2.contains(word1)) {
+            return 1;
+        }
+        
+        // 如果不是子串，返回-1
+        return -1;
+    }
 }`
   },
   {
@@ -562,6 +974,71 @@ export const examples = [
   
   // 返回最少停留次数
   return stops;
+}`,
+    javaCode: `import java.util.Arrays;
+import java.util.Comparator;
+
+public class Solution {
+    public static int minJuiceStalls(int D, int K, int[][] stalls) {
+        // 按位置排序果汁摊，确保我们按顺序考虑它们
+        Arrays.sort(stalls, Comparator.comparingInt(a -> a[0]));
+        
+        // 初始化当前能量
+        int currentEnergy = K;
+        
+        // 初始化当前位置
+        int currentPosition = 0;
+        
+        // 初始化停留次数
+        int stops = 0;
+        
+        // 初始化果汁摊索引
+        int i = 0;
+        
+        // 主循环，直到到达学校
+        while (currentPosition < D) {
+            // 计算当前能量能到达的最远距离
+            int maxReach = currentPosition + currentEnergy;
+            
+            // 如果已经可以到达学校，直接返回停留次数
+            if (maxReach >= D) {
+                return stops;
+            }
+            
+            // 找出在可到达范围内的果汁摊，并选择能提供最多能量的那个
+            int bestStall = -1;
+            int maxEnergyGain = 0;
+            
+            while (i < stalls.length && stalls[i][0] <= maxReach) {
+                // 选择能量增益最大的果汁摊
+                if (stalls[i][1] > maxEnergyGain) {
+                    maxEnergyGain = stalls[i][1];
+                    bestStall = i;
+                }
+                i++;
+            }
+            
+            // 如果没有找到可到达的果汁摊，无法到达学校，返回-1
+            if (bestStall == -1) {
+                return -1;
+            }
+            
+            // 前往选择的果汁摊
+            int stallPosition = stalls[bestStall][0];
+            // 扣除到达果汁摊消耗的能量
+            currentEnergy -= (stallPosition - currentPosition);
+            // 更新当前位置到果汁摊位置
+            currentPosition = stallPosition;
+            
+            // 消耗果汁，增加能量
+            currentEnergy += stalls[bestStall][1];
+            // 停留次数加1
+            stops++;
+        }
+        
+        // 返回最少停留次数
+        return stops;
+    }
 }`
   },
   {
@@ -606,6 +1083,38 @@ export const examples = [
   
   // 拼接成字符串并返回
   return digits.join('');
+}`,
+    javaCode: `import java.util.Arrays;
+
+public class Solution {
+    public static String generateTrackNumber(int registrationNumber) {
+        // 处理负数情况，取绝对值
+        int absNumber = Math.abs(registrationNumber);
+        String numberStr = String.valueOf(absNumber);
+        char[] digits = numberStr.toCharArray();
+        
+        // 对数字进行排序
+        Arrays.sort(digits);
+        
+        // 找到第一个非零数字
+        int firstNonZeroIndex = 0;
+        while (firstNonZeroIndex < digits.length && digits[firstNonZeroIndex] == '0') {
+            firstNonZeroIndex++;
+        }
+        
+        // 如果所有数字都是零，返回0
+        if (firstNonZeroIndex == digits.length) {
+            return "0";
+        }
+        
+        // 将第一个非零数字移到最前面
+        char temp = digits[0];
+        digits[0] = digits[firstNonZeroIndex];
+        digits[firstNonZeroIndex] = temp;
+        
+        // 拼接成字符串并返回
+        return new String(digits);
+    }
 }`
   },
   {
@@ -658,6 +1167,41 @@ export const examples = [
   }
   
   return ways;
+}`,
+    javaCode: `public class Solution {
+    public static int countWaysToGetLongestOnes(String S, int K) {
+        int left = 0;
+        int maxLength = 0;
+        int zeroCount = 0;
+        int ways = 0;
+        int currentLength = 0;
+        
+        for (int right = 0; right < S.length(); right++) {
+            if (S.charAt(right) == '0') {
+                zeroCount++;
+            }
+            
+            // 调整左指针，保持窗口内的0的数量不超过K
+            while (zeroCount > K) {
+                if (S.charAt(left) == '0') {
+                    zeroCount--;
+                }
+                left++;
+            }
+            
+            currentLength = right - left + 1;
+            
+            // 更新最大长度和方法数
+            if (currentLength > maxLength) {
+                maxLength = currentLength;
+                ways = 1;
+            } else if (currentLength == maxLength) {
+                ways++;
+            }
+        }
+        
+        return ways;
+    }
 }`
   },
   {
@@ -690,6 +1234,26 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class Solution {
+    public static List<Integer> removeDuplicates(List<Integer> nums) {
+        Set<Integer> seen = new HashSet<>();
+        List<Integer> result = new ArrayList<>();
+        
+        for (int num : nums) {
+            if (!seen.contains(num)) {
+                seen.add(num);
+                result.add(num);
+            }
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -785,6 +1349,155 @@ export const examples = [
   
   // 如果没有一条直线包含所有点，返回2（因为任意三个不共线的点需要两条直线）
   return 2;
+}`,
+    javaCode: `import java.util.HashSet;
+import java.util.Set;
+
+public class Solution {
+    static class Point {
+        int x;
+        int y;
+        
+        Point(int x, int y) {
+            this.x = x;
+            this.y = y;
+        }
+    }
+    
+    static class Line {
+        String type;
+        int x; // for vertical lines
+        int y; // for horizontal lines
+        int dy; // for sloped lines
+        int dx; // for sloped lines
+        double intercept; // for sloped lines
+        
+        Line(String type, int x, int y, int dy, int dx, double intercept) {
+            this.type = type;
+            this.x = x;
+            this.y = y;
+            this.dy = dy;
+            this.dx = dx;
+            this.intercept = intercept;
+        }
+        
+        @Override
+        public int hashCode() {
+            final int prime = 31;
+            int result = 1;
+            result = prime * result + ((type == null) ? 0 : type.hashCode());
+            result = prime * result + x;
+            result = prime * result + y;
+            result = prime * result + dy;
+            result = prime * result + dx;
+            long temp = Double.doubleToLongBits(intercept);
+            result = prime * result + (int) (temp ^ (temp >>> 32));
+            return result;
+        }
+        
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) return true;
+            if (obj == null) return false;
+            if (getClass() != obj.getClass()) return false;
+            Line other = (Line) obj;
+            if (type == null) {
+                if (other.type != null) return false;
+            } else if (!type.equals(other.type)) return false;
+            if (x != other.x) return false;
+            if (y != other.y) return false;
+            if (dy != other.dy) return false;
+            if (dx != other.dx) return false;
+            if (Double.doubleToLongBits(intercept) != Double.doubleToLongBits(other.intercept)) return false;
+            return true;
+        }
+    }
+    
+    public static int minStraightLineRoutes(int[][] locations) {
+        int n = locations.length;
+        if (n <= 2) {
+            return n == 0 ? 0 : 1;
+        }
+        
+        // 存储所有不同的直线
+        Set<Line> lines = new HashSet<>();
+        
+        // 遍历所有点对，计算它们所在的直线
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                Point p1 = new Point(locations[i][0], locations[i][1]);
+                Point p2 = new Point(locations[j][0], locations[j][1]);
+                Line line = getLine(p1, p2);
+                lines.add(line);
+            }
+        }
+        
+        // 检查是否存在一条直线包含所有点
+        for (Line line : lines) {
+            boolean allOnLine = true;
+            
+            for (int[] point : locations) {
+                boolean onLine = false;
+                
+                if (line.type.equals("vertical")) {
+                    onLine = point[0] == line.x;
+                } else if (line.type.equals("horizontal")) {
+                    onLine = point[1] == line.y;
+                } else {
+                    // 检查点是否在直线上
+                    double expectedY = (double) line.dy / line.dx * point[0] + line.intercept;
+                    onLine = Math.abs(point[1] - expectedY) < 1e-10;
+                }
+                
+                if (!onLine) {
+                    allOnLine = false;
+                    break;
+                }
+            }
+            
+            if (allOnLine) {
+                return 1;
+            }
+        }
+        
+        // 如果没有一条直线包含所有点，返回2（因为任意三个不共线的点需要两条直线）
+        return 2;
+    }
+    
+    private static Line getLine(Point p1, Point p2) {
+        int dx = p2.x - p1.x;
+        int dy = p2.y - p1.y;
+        
+        // 处理垂直直线
+        if (dx == 0) {
+            return new Line("vertical", p1.x, 0, 0, 0, 0);
+        }
+        
+        // 处理水平直线
+        if (dy == 0) {
+            return new Line("horizontal", 0, p1.y, 0, 0, 0);
+        }
+        
+        // 计算斜率的最简形式
+        int gcd = gcd(Math.abs(dy), Math.abs(dx));
+        int sign = (dy * dx) < 0 ? -1 : 1;
+        int simplifiedDy = sign * Math.abs(dy) / gcd;
+        int simplifiedDx = Math.abs(dx) / gcd;
+        
+        // 计算截距
+        double intercept = p1.y - (double) simplifiedDy / simplifiedDx * p1.x;
+        
+        return new Line("slope", 0, 0, simplifiedDy, simplifiedDx, intercept);
+    }
+    
+    private static int gcd(int a, int b) {
+        while (b != 0) {
+            int temp = b;
+            b = a % b;
+            a = temp;
+        }
+        return a;
+    }
 }`
   },
   {
@@ -807,6 +1520,17 @@ export const examples = [
     ],
     code: `function countElementsLessThanK(nums, K) {
   return nums.filter(num => num < K).length;
+}`,
+    javaCode: `public class Solution {
+    public static int countElementsLessThanK(int[] nums, int K) {
+        int count = 0;
+        for (int num : nums) {
+            if (num < K) {
+                count++;
+            }
+        }
+        return count;
+    }
 }`
   },
   {
@@ -869,6 +1593,61 @@ export const examples = [
   }
   
   return maxTreeHeight;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
+public class Solution {
+    public static int minSignalStrength(int engineers, int[][] connections) {
+        // 构建邻接表
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < engineers; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        for (int[] connection : connections) {
+            int u = connection[0];
+            int v = connection[1];
+            adj.get(u).add(v);
+            adj.get(v).add(u);
+        }
+        
+        // 找到树的高度，这就是所需的最小信号强度
+        int maxTreeHeight = 0;
+        for (int i = 0; i < engineers; i++) {
+            int height = getTreeHeight(i, adj, engineers);
+            maxTreeHeight = Math.max(maxTreeHeight, height);
+        }
+        
+        return maxTreeHeight;
+    }
+    
+    // 计算树的高度（使用BFS）
+    private static int getTreeHeight(int root, List<List<Integer>> adj, int n) {
+        boolean[] visited = new boolean[n];
+        Queue<int[]> queue = new LinkedList<>();
+        queue.offer(new int[]{root, 0});
+        visited[root] = true;
+        int maxHeight = 0;
+        
+        while (!queue.isEmpty()) {
+            int[] current = queue.poll();
+            int node = current[0];
+            int height = current[1];
+            maxHeight = Math.max(maxHeight, height);
+            
+            for (int neighbor : adj.get(node)) {
+                if (!visited[neighbor]) {
+                    visited[neighbor] = true;
+                    queue.offer(new int[]{neighbor, height + 1});
+                }
+            }
+        }
+        
+        return maxHeight;
+    }
 }`
   },
   {
@@ -900,6 +1679,22 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.Arrays;
+
+public class Solution {
+    public static int[] alternateSort(int[] nums) {
+        // 按升序排序
+        Arrays.sort(nums);
+        
+        // 提取交替元素（从第一个位置开始）
+        int[] result = new int[(nums.length + 1) / 2];
+        for (int i = 0, j = 0; i < nums.length; i += 2, j++) {
+            result[j] = nums[i];
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -948,6 +1743,37 @@ export const examples = [
   }
   
   return maxLength;
+}`,
+    javaCode: `public class Solution {
+    public static int maxSignalLength(String data) {
+        if (data.length() < 3) {
+            return 0;
+        }
+        
+        int maxLength = 0;
+        int currentLength = 1;
+        char currentChar = data.charAt(0);
+        
+        for (int i = 1; i < data.length(); i++) {
+            if (data.charAt(i) == currentChar) {
+                currentLength++;
+            } else {
+                // 检查当前序列是否在字符串中间
+                if (i > currentLength && i < data.length()) {
+                    maxLength = Math.max(maxLength, currentLength);
+                }
+                currentChar = data.charAt(i);
+                currentLength = 1;
+            }
+        }
+        
+        // 检查最后一个序列
+        if (currentLength > 1 && data.length() > currentLength) {
+            maxLength = Math.max(maxLength, currentLength);
+        }
+        
+        return maxLength;
+    }
 }`
   },
   {
@@ -998,6 +1824,42 @@ export const examples = [
   }
   
   return totalCableLength;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static int minCableLength(int[] systems, int[] distances) {
+        int n = systems.length;
+        List<Integer> onPositions = new ArrayList<>();
+        
+        // 记录所有开启系统的位置
+        for (int i = 0; i < n; i++) {
+            if (systems[i] == 1) {
+                onPositions.add(i);
+            }
+        }
+        
+        int totalCableLength = 0;
+        
+        // 为每个关闭的系统找到最近的开启系统
+        for (int i = 0; i < n; i++) {
+            if (systems[i] == 0) {
+                int minDistance = Integer.MAX_VALUE;
+                
+                for (int onPos : onPositions) {
+                    int distance = Math.abs(distances[i] - distances[onPos]);
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                    }
+                }
+                
+                totalCableLength += minDistance;
+            }
+        }
+        
+        return totalCableLength;
+    }
 }`
   },
   {
@@ -1055,6 +1917,50 @@ export const examples = [
   
   // 如果所有节点都被访问到，则图是连通的
   return visitedCount === n ? 1 : 0;
+}`,
+    javaCode: `import java.util.LinkedList;
+import java.util.Queue;
+
+public class Solution {
+    public static int isTree(int[][] adjMatrix) {
+        int n = adjMatrix.length;
+        
+        // 检查边数是否为n-1（树的性质：n个节点有n-1条边）
+        int edgeCount = 0;
+        for (int i = 0; i < n; i++) {
+            for (int j = i + 1; j < n; j++) {
+                if (adjMatrix[i][j] == 1) {
+                    edgeCount++;
+                }
+            }
+        }
+        
+        if (edgeCount != n - 1) {
+            return 0;
+        }
+        
+        // 检查图是否连通
+        boolean[] visited = new boolean[n];
+        Queue<Integer> queue = new LinkedList<>();
+        queue.offer(0);
+        visited[0] = true;
+        int visitedCount = 1;
+        
+        while (!queue.isEmpty()) {
+            int node = queue.poll();
+            
+            for (int i = 0; i < n; i++) {
+                if (adjMatrix[node][i] == 1 && !visited[i]) {
+                    visited[i] = true;
+                    visitedCount++;
+                    queue.offer(i);
+                }
+            }
+        }
+        
+        // 如果所有节点都被访问到，则图是连通的
+        return visitedCount == n ? 1 : 0;
+    }
 }`
   },
   {
@@ -1096,6 +2002,43 @@ export const examples = [
   }
   
   return nonCommonCount;
+}`,
+    javaCode: `import java.util.HashSet;
+import java.util.Set;
+
+public class Solution {
+    public static int countNonCommonElements(int[] list1, int[] list2) {
+        Set<Integer> set1 = new HashSet<>();
+        Set<Integer> set2 = new HashSet<>();
+        
+        // 将list1的元素添加到set1
+        for (int num : list1) {
+            set1.add(num);
+        }
+        
+        // 将list2的元素添加到set2
+        for (int num : list2) {
+            set2.add(num);
+        }
+        
+        int nonCommonCount = 0;
+        
+        // 统计list1中不在list2中的元素
+        for (int num : list1) {
+            if (!set2.contains(num)) {
+                nonCommonCount++;
+            }
+        }
+        
+        // 统计list2中不在list1中的元素
+        for (int num : list2) {
+            if (!set1.contains(num)) {
+                nonCommonCount++;
+            }
+        }
+        
+        return nonCommonCount;
+    }
 }`
   },
   {
@@ -1137,6 +2080,34 @@ export const examples = [
   }
   
   return count;
+}`,
+    javaCode: `import java.util.Arrays;
+import java.util.Comparator;
+
+public class Solution {
+    public static int minMarkerUses(int[][] segments) {
+        if (segments.length == 0) {
+            return 0;
+        }
+        
+        // 按线段的结束点排序
+        Arrays.sort(segments, Comparator.comparingInt(a -> a[1]));
+        
+        int count = 1;
+        int lastMarkerPosition = segments[0][1];
+        
+        for (int i = 1; i < segments.length; i++) {
+            int start = segments[i][0];
+            int end = segments[i][1];
+            // 如果当前线段的起点大于上一个标记的位置，需要放置新的标记
+            if (start > lastMarkerPosition) {
+                count++;
+                lastMarkerPosition = end;
+            }
+        }
+        
+        return count;
+    }
 }`
   },
   {
@@ -1261,6 +2232,141 @@ export const examples = [
   } else {
     return [-1];
   }
+}`,
+    javaCode: `import java.util.*;
+
+public class Solution {
+    public static List<Integer> optimalBorrowingSequence(int[] students, Map<String, Integer> books, Map<String, List<String>> issued, Map<String, List<String>> required) {
+        // 复制书籍数量，避免修改原始数据
+        Map<String, Integer> availableBooks = new HashMap<>(books);
+        
+        // 初始化已借书籍
+        Map<String, List<String>> borrowedBooks = new HashMap<>();
+        for (Map.Entry<String, List<String>> entry : issued.entrySet()) {
+            String studentId = entry.getKey();
+            List<String> bookList = entry.getValue();
+            borrowedBooks.put(studentId, new ArrayList<>(bookList));
+            // 减少可用书籍数量
+            for (String book : bookList) {
+                availableBooks.put(book, availableBooks.get(book) - 1);
+            }
+        }
+        
+        // 检查每个学生是否已经满足需求
+        Set<String> completed = new HashSet<>();
+        for (Map.Entry<String, List<String>> entry : required.entrySet()) {
+            String studentId = entry.getKey();
+            List<String> requiredBooks = entry.getValue();
+            List<String> studentIssued = borrowedBooks.getOrDefault(studentId, new ArrayList<>());
+            boolean hasAllBooks = true;
+            for (String book : requiredBooks) {
+                if (!studentIssued.contains(book)) {
+                    hasAllBooks = false;
+                    break;
+                }
+            }
+            if (hasAllBooks) {
+                completed.add(studentId);
+            }
+        }
+        
+        List<Integer> sequence = new ArrayList<>();
+        int iteration = 0;
+        int maxIterations = students.length * 10; // 防止无限循环
+        
+        while (completed.size() < students.length && iteration < maxIterations) {
+            boolean madeProgress = false;
+            
+            // 按学生ID顺序处理
+            int[] sortedStudents = Arrays.copyOf(students, students.length);
+            Arrays.sort(sortedStudents);
+            
+            for (int studentId : sortedStudents) {
+                String studentIdStr = String.valueOf(studentId);
+                
+                // 如果学生已经完成，跳过
+                if (completed.contains(studentIdStr)) {
+                    continue;
+                }
+                
+                List<String> studentRequired = required.get(studentIdStr);
+                List<String> studentBorrowed = borrowedBooks.getOrDefault(studentIdStr, new ArrayList<>());
+                
+                // 检查学生是否需要借书
+                List<String> neededBooks = new ArrayList<>();
+                for (String book : studentRequired) {
+                    if (!studentBorrowed.contains(book)) {
+                        neededBooks.add(book);
+                    }
+                }
+                
+                if (neededBooks.isEmpty()) {
+                    // 学生已经满足所有需求
+                    completed.add(studentIdStr);
+                    madeProgress = true;
+                } else {
+                    // 尝试借书
+                    boolean canBorrow = true;
+                    List<String> booksToBorrow = new ArrayList<>();
+                    
+                    for (String book : neededBooks) {
+                        if (availableBooks.getOrDefault(book, 0) > 0) {
+                            booksToBorrow.add(book);
+                        } else {
+                            canBorrow = false;
+                            break;
+                        }
+                    }
+                    
+                    if (canBorrow) {
+                        // 借书
+                        sequence.add(studentId);
+                        
+                        // 更新已借书籍
+                        if (!borrowedBooks.containsKey(studentIdStr)) {
+                            borrowedBooks.put(studentIdStr, new ArrayList<>());
+                        }
+                        borrowedBooks.get(studentIdStr).addAll(booksToBorrow);
+                        
+                        // 更新可用书籍
+                        for (String book : booksToBorrow) {
+                            availableBooks.put(book, availableBooks.get(book) - 1);
+                        }
+                        
+                        // 检查学生是否现在满足所有需求
+                        boolean hasAllBooks = true;
+                        for (String book : studentRequired) {
+                            if (!borrowedBooks.get(studentIdStr).contains(book)) {
+                                hasAllBooks = false;
+                                break;
+                            }
+                        }
+                        if (hasAllBooks) {
+                            completed.add(studentIdStr);
+                        }
+                        
+                        madeProgress = true;
+                    }
+                }
+            }
+            
+            // 如果没有进展，可能无法完成
+            if (!madeProgress) {
+                break;
+            }
+            
+            iteration++;
+        }
+        
+        // 检查是否所有学生都完成了
+        if (completed.size() == students.length) {
+            return sequence;
+        } else {
+            List<Integer> result = new ArrayList<>();
+            result.add(-1);
+            return result;
+        }
+    }
 }`
   },
   {
@@ -1305,6 +2411,37 @@ export const examples = [
   
   // 拼接成字符串并返回
   return digits.join('');
+}`,
+    javaCode: `import java.util.Arrays;
+
+public class Solution {
+    public static String generateTrackNumber(int registrationNumber) {
+        // 处理负数情况，取绝对值
+        long absNumber = Math.abs((long) registrationNumber);
+        char[] digits = String.valueOf(absNumber).toCharArray();
+        
+        // 对数字进行排序
+        Arrays.sort(digits);
+        
+        // 找到第一个非零数字
+        int firstNonZeroIndex = 0;
+        while (firstNonZeroIndex < digits.length && digits[firstNonZeroIndex] == '0') {
+            firstNonZeroIndex++;
+        }
+        
+        // 如果所有数字都是零，返回0
+        if (firstNonZeroIndex == digits.length) {
+            return "0";
+        }
+        
+        // 将第一个非零数字移到最前面
+        char temp = digits[0];
+        digits[0] = digits[firstNonZeroIndex];
+        digits[firstNonZeroIndex] = temp;
+        
+        // 拼接成字符串并返回
+        return new String(digits);
+    }
 }`
   },
   {
@@ -1336,6 +2473,34 @@ export const examples = [
   
   // 合并两个部分
   return [...firstK, ...remaining];
+}`,
+    javaCode: `import java.util.Arrays;
+import java.util.Comparator;
+
+public class Solution {
+    public static int[] sortFirstKAscendingRemainingDescending(int[] nums, int K) {
+        int n = nums.length;
+        
+        // 对前K个元素进行升序排序
+        int[] firstK = Arrays.copyOfRange(nums, 0, K);
+        Arrays.sort(firstK);
+        
+        // 对剩余元素进行降序排序
+        Integer[] remaining = new Integer[n - K];
+        for (int i = K; i < n; i++) {
+            remaining[i - K] = nums[i];
+        }
+        Arrays.sort(remaining, Comparator.reverseOrder());
+        
+        // 合并两个部分
+        int[] result = new int[n];
+        System.arraycopy(firstK, 0, result, 0, K);
+        for (int i = 0; i < remaining.length; i++) {
+            result[K + i] = remaining[i];
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -1374,6 +2539,33 @@ export const examples = [
   }
   
   return maxRating;
+}`,
+    javaCode: `public class Solution {
+    public static int maximizeStarRating(int[][] horror, int[][] scifi, int budget) {
+        int maxRating = -1;
+        
+        // 遍历所有可能的恐怖书选择
+        for (int[] hBook : horror) {
+            int hRating = hBook[0];
+            int hPrice = hBook[1];
+            
+            // 遍历所有可能的科幻书选择
+            for (int[] sBook : scifi) {
+                int sRating = sBook[0];
+                int sPrice = sBook[1];
+                
+                int totalPrice = hPrice + sPrice;
+                if (totalPrice <= budget) {
+                    int totalRating = hRating + sRating;
+                    if (totalRating > maxRating) {
+                        maxRating = totalRating;
+                    }
+                }
+            }
+        }
+        
+        return maxRating;
+    }
 }`
   },
   {
@@ -1418,6 +2610,37 @@ export const examples = [
   }
   
   return remainingBuses;
+}`,
+    javaCode: `import java.util.Arrays;
+import java.util.Comparator;
+
+public class Solution {
+    public static int countRemainingBuses(int[][] buses) {
+        if (buses.length == 0) {
+            return 0;
+        }
+        
+        // 按起点排序
+        Arrays.sort(buses, Comparator.comparingInt(a -> a[0]));
+        
+        int remainingBuses = 1;
+        int currentEnd = buses[0][1];
+        
+        for (int i = 1; i < buses.length; i++) {
+            int start = buses[i][0];
+            int end = buses[i][1];
+            // 如果当前公交车的起点大于前一辆公交车的终点，说明没有重叠
+            if (start > currentEnd) {
+                remainingBuses++;
+                currentEnd = end;
+            } else {
+                // 有重叠，更新当前结束点为两者的最大值
+                currentEnd = Math.max(currentEnd, end);
+            }
+        }
+        
+        return remainingBuses;
+    }
 }`
   },
   {
@@ -1474,6 +2697,56 @@ export const examples = [
   }
   
   return bestList;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> longestPalindromicSalesList(List<Integer> sales) {
+        // 检查是否已经是回文
+        if (isPalindrome(sales)) {
+            return sales;
+        }
+        
+        // 尝试合并相邻元素，找到最长的回文
+        int maxLength = 1;
+        List<Integer> bestList = new ArrayList<>();
+        bestList.add(sales.get(0));
+        
+        // 遍历所有可能的合并位置
+        for (int i = 0; i < sales.size() - 1; i++) {
+            // 合并第i和i+1个元素
+            List<Integer> newList = new ArrayList<>();
+            for (int j = 0; j < i; j++) {
+                newList.add(sales.get(j));
+            }
+            newList.add(sales.get(i) + sales.get(i + 1));
+            for (int j = i + 2; j < sales.size(); j++) {
+                newList.add(sales.get(j));
+            }
+            
+            // 递归处理新列表
+            List<Integer> result = longestPalindromicSalesList(newList);
+            
+            // 更新最长回文
+            if (result.size() > maxLength) {
+                maxLength = result.size();
+                bestList = result;
+            }
+        }
+        
+        return bestList;
+    }
+    
+    // 检查是否是回文
+    private static boolean isPalindrome(List<Integer> arr) {
+        for (int i = 0; i < arr.size() / 2; i++) {
+            if (!arr.get(i).equals(arr.get(arr.size() - 1 - i))) {
+                return false;
+            }
+        }
+        return true;
+    }
 }`
   },
   {
@@ -1528,6 +2801,63 @@ export const examples = [
   }
   
   return totalExecuted;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
+import java.util.Comparator;
+
+public class Solution {
+    public static int maxApplicationsExecuted(List<List<String>> applications) {
+        // 按资源类型分组
+        Map<Integer, List<Application>> resources = new HashMap<>();
+        for (List<String> app : applications) {
+            String start = app.get(0);
+            String end = app.get(1);
+            int resource = Integer.parseInt(app.get(2));
+            
+            if (!resources.containsKey(resource)) {
+                resources.put(resource, new ArrayList<>());
+            }
+            resources.get(resource).add(new Application(start, end));
+        }
+        
+        int totalExecuted = 0;
+        
+        // 对每个资源单独处理
+        for (Map.Entry<Integer, List<Application>> entry : resources.entrySet()) {
+            List<Application> apps = entry.getValue();
+            
+            // 按结束时间排序
+            Collections.sort(apps, Comparator.comparing(a -> a.end));
+            
+            int count = 0;
+            String lastEnd = "0000";
+            
+            for (Application app : apps) {
+                if (app.start.compareTo(lastEnd) >= 0) {
+                    count++;
+                    lastEnd = app.end;
+                }
+            }
+            
+            totalExecuted += count;
+        }
+        
+        return totalExecuted;
+    }
+    
+    static class Application {
+        String start;
+        String end;
+        
+        Application(String start, String end) {
+            this.start = start;
+            this.end = end;
+        }
+    }
 }`
   },
   {
@@ -1554,6 +2884,15 @@ export const examples = [
   // 计算加密结果
   const encrypted = lastDigit % 1000000007;
   return encrypted;
+}`,
+    javaCode: `public class Solution {
+    public static int encryptSecretCode(long S, int N, int M) {
+        // 取S的最后一位数字
+        int lastDigit = (int) (S % 10);
+        // 计算加密结果
+        int encrypted = lastDigit % 1000000007;
+        return encrypted;
+    }
 }`
   },
   {
@@ -1604,6 +2943,42 @@ export const examples = [
   }
   
   return misses;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static int calculateCacheMisses(int cacheSize, int[] pageRequests) {
+        if (cacheSize == 0) {
+            return pageRequests.length;
+        }
+        
+        List<Integer> cache = new ArrayList<>();
+        int misses = 0;
+        
+        for (int page : pageRequests) {
+            int index = cache.indexOf(page);
+            
+            if (index == -1) {
+                // 缓存未命中
+                misses++;
+                
+                if (cache.size() >= cacheSize) {
+                    // 缓存已满，删除最近最少使用的页面
+                    cache.remove(0);
+                }
+                
+                // 添加新页面到缓存末尾（最近使用）
+                cache.add(page);
+            } else {
+                // 缓存命中，将页面移到缓存末尾（最近使用）
+                cache.remove(index);
+                cache.add(page);
+            }
+        }
+        
+        return misses;
+    }
 }`
   },
   {
@@ -1641,6 +3016,26 @@ export const examples = [
   }
   
   return count;
+}`,
+    javaCode: `public class Solution {
+    public static int minBitFlips(String P, String Q) {
+        // 将字符串转换为数字
+        int pNum = Integer.parseInt(P, 2);
+        int qNum = Integer.parseInt(Q, 2);
+        
+        // 计算异或结果，找出不同的位
+        int xor = pNum ^ qNum;
+        
+        // 计算异或结果中1的个数，即需要翻转的位数
+        int count = 0;
+        int temp = xor;
+        while (temp > 0) {
+            count += temp & 1;
+            temp >>= 1;
+        }
+        
+        return count;
+    }
 }`
   },
   {
@@ -1709,6 +3104,61 @@ export const examples = [
   }
   
   return maxPower;
+}`,
+    javaCode: `import java.util.HashMap;
+import java.util.Map;
+
+public class Solution {
+    private static int[] parent;
+    
+    public static int winningTeamPower(int N, int[] X, int M, int[][] cards) {
+        // 初始化并查集
+        parent = new int[N + 1];
+        for (int i = 1; i <= N; i++) {
+            parent[i] = i;
+        }
+        
+        // 处理卡片，合并团队
+        for (int[] card : cards) {
+            int u = card[0];
+            int v = card[1];
+            union(u, v);
+        }
+        
+        // 计算每个团队的力量
+        Map<Integer, Integer> teamPower = new HashMap<>();
+        for (int i = 1; i <= N; i++) {
+            int root = find(i);
+            teamPower.put(root, teamPower.getOrDefault(root, 0) + X[i - 1]);
+        }
+        
+        // 找出最大力量
+        int maxPower = 0;
+        for (int power : teamPower.values()) {
+            if (power > maxPower) {
+                maxPower = power;
+            }
+        }
+        
+        return maxPower;
+    }
+    
+    // 查找根节点
+    private static int find(int u) {
+        if (parent[u] != u) {
+            parent[u] = find(parent[u]);
+        }
+        return parent[u];
+    }
+    
+    // 合并两个集合
+    private static void union(int u, int v) {
+        int rootU = find(u);
+        int rootV = find(v);
+        if (rootU != rootV) {
+            parent[rootV] = rootU;
+        }
+    }
 }`
   },
   {
@@ -1752,6 +3202,36 @@ export const examples = [
   
   // 返回第K个位置的士兵ID（转换为0-based索引）
   return soldiers[K - 1];
+}`,
+    javaCode: `public class Solution {
+    public static int findSoldierAtPosition(int N, int Q, int[][] actions, int K) {
+        // 初始化士兵数组
+        int[] soldiers = new int[N];
+        for (int i = 0; i < N; i++) {
+            soldiers[i] = i + 1;
+        }
+        
+        // 处理每个行动
+        for (int[] action : actions) {
+            int row = action[0];
+            int col = action[1];
+            // 转换为0-based索引
+            int left = row - 1;
+            int right = col - 1;
+            
+            // 交换位置
+            while (left < right) {
+                int temp = soldiers[left];
+                soldiers[left] = soldiers[right];
+                soldiers[right] = temp;
+                left++;
+                right--;
+            }
+        }
+        
+        // 返回第K个位置的士兵ID（转换为0-based索引）
+        return soldiers[K - 1];
+    }
 }`
   },
   {
@@ -1837,6 +3317,98 @@ export const examples = [
   
   dfs(1, -1);
   return maxProduct;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    private static List<List<Integer>> adj;
+    private static int[] values;
+    private static long maxProduct;
+    
+    public static long maxPathProduct(int N, int[][] tree, int[] values) {
+        // 构建邻接表
+        adj = new ArrayList<>();
+        for (int i = 0; i <= N; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        for (int[] edge : tree) {
+            int u = edge[0];
+            int v = edge[1];
+            adj.get(u).add(v);
+            adj.get(v).add(u);
+        }
+        
+        Solution.values = values;
+        maxProduct = Long.MIN_VALUE;
+        
+        // DFS遍历
+        dfs(1, -1);
+        return maxProduct;
+    }
+    
+    private static Pair dfs(int node, int parent) {
+        // 如果是叶节点（除了根节点）
+        if (node != 1 && adj.get(node).size() == 1) {
+            long val = values[node - 1];
+            return new Pair(val, val);
+        }
+        
+        long maxFromChildren = Long.MIN_VALUE;
+        long minFromChildren = Long.MAX_VALUE;
+        boolean hasChildren = false;
+        
+        for (int neighbor : adj.get(node)) {
+            if (neighbor != parent) {
+                hasChildren = true;
+                Pair childPair = dfs(neighbor, node);
+                long childMax = childPair.max;
+                long childMin = childPair.min;
+                
+                // 计算当前节点与子节点路径的乘积
+                long currentMax = Math.max(
+                    (long) values[node - 1] * childMax,
+                    (long) values[node - 1] * childMin
+                );
+                
+                long currentMin = Math.min(
+                    (long) values[node - 1] * childMax,
+                    (long) values[node - 1] * childMin
+                );
+                
+                // 更新最大和最小
+                if (currentMax > maxFromChildren) {
+                    maxFromChildren = currentMax;
+                }
+                if (currentMin < minFromChildren) {
+                    minFromChildren = currentMin;
+                }
+            }
+        }
+        
+        if (!hasChildren) {
+            long val = values[node - 1];
+            return new Pair(val, val);
+        }
+        
+        // 更新全局最大乘积
+        if (maxFromChildren > maxProduct) {
+            maxProduct = maxFromChildren;
+        }
+        
+        return new Pair(maxFromChildren, minFromChildren);
+    }
+    
+    static class Pair {
+        long max;
+        long min;
+        
+        Pair(long max, long min) {
+            this.max = max;
+            this.min = min;
+        }
+    }
 }`
   },
   {
@@ -1871,6 +3443,23 @@ export const examples = [
   
   // 最大分子数就是用最小质量的分子组成Q
   return Math.floor(Q / minMass);
+}`,
+    javaCode: `import java.util.Map;
+
+public class Solution {
+    public static int maxMolecules(int Q, Map<String, Integer> atomicMasses) {
+        // 计算每种分子的质量
+        int massA = atomicMasses.get("A");  // 单原子
+        int massB = atomicMasses.get("B");  // 单原子
+        int massC = atomicMasses.get("C") * 2;  // 双原子
+        int massD = atomicMasses.get("D") * 2;   // 双原子
+        
+        // 找出最小的分子质量
+        int minMass = Math.min(Math.min(massA, massB), Math.min(massC, massD));
+        
+        // 最大分子数就是用最小质量的分子组成Q
+        return Q / minMass;
+    }
 }`
   },
   {
@@ -1913,6 +3502,35 @@ export const examples = [
   }
   
   return happyCount;
+}`,
+    javaCode: `import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class Solution {
+    public static int maximizeHappyFriends(int N, int M, int K, List<List<Integer>> friends) {
+        // 计算蛋糕总块数
+        int totalPieces = N * M;
+        // 记录已经分配的水果
+        Set<Integer> assigned = new HashSet<>();
+        int happyCount = 0;
+        
+        // 遍历每个朋友
+        for (List<Integer> favFruits : friends) {
+            // 遍历朋友的每个喜欢的水果
+            for (int fruit : favFruits) {
+                // 检查水果是否在蛋糕范围内且未被分配
+                if (fruit >= 1 && fruit <= totalPieces && !assigned.contains(fruit)) {
+                    // 分配水果给朋友
+                    assigned.add(fruit);
+                    happyCount++;
+                    break;
+                }
+            }
+        }
+        
+        return happyCount;
+    }
 }`
   },
   {
@@ -1990,6 +3608,96 @@ export const examples = [
   }
   
   return bestPermutation;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    private static int[] likes;
+    private static int N;
+    private static int maxAttendance;
+    private static List<Integer> bestPermutation;
+    
+    public static List<Integer> maximizeAlumniAttendance(int n, int[] likesArray) {
+        N = n;
+        likes = likesArray;
+        maxAttendance = 0;
+        bestPermutation = new ArrayList<>();
+        
+        // 生成初始数组 [0, 1, ..., N-1]
+        List<Integer> initial = new ArrayList<>();
+        for (int i = 0; i < N; i++) {
+            initial.add(i);
+        }
+        
+        // 生成所有排列
+        generatePermutations(new ArrayList<>(), initial);
+        
+        return bestPermutation;
+    }
+    
+    // 生成所有排列
+    private static void generatePermutations(List<Integer> current, List<Integer> remaining) {
+        if (remaining.isEmpty()) {
+            // 计算当前排列的出席人数
+            int attendance = calculateAttendance(current);
+            
+            // 更新最佳排列
+            if (attendance > maxAttendance) {
+                maxAttendance = attendance;
+                bestPermutation = new ArrayList<>(current);
+            } else if (attendance == maxAttendance) {
+                // 如果出席人数相同，选择字典顺序较小的
+                if (isLexSmaller(current, bestPermutation)) {
+                    bestPermutation = new ArrayList<>(current);
+                }
+            }
+            return;
+        }
+        
+        for (int i = 0; i < remaining.size(); i++) {
+            // 选择一个元素
+            int selected = remaining.get(i);
+            current.add(selected);
+            
+            // 递归生成剩余元素的排列
+            List<Integer> newRemaining = new ArrayList<>(remaining);
+            newRemaining.remove(i);
+            generatePermutations(current, newRemaining);
+            
+            // 回溯
+            current.remove(current.size() - 1);
+        }
+    }
+    
+    // 计算排列的出席人数
+    private static int calculateAttendance(List<Integer> permutation) {
+        int count = 0;
+        for (int i = 0; i < permutation.size(); i++) {
+            int current = permutation.get(i);
+            int left = permutation.get((i - 1 + N) % N);
+            int right = permutation.get((i + 1) % N);
+            if (left == likes[current] || right == likes[current]) {
+                count++;
+            }
+        }
+        return count;
+    }
+    
+    // 检查current是否比best更字典序小
+    private static boolean isLexSmaller(List<Integer> current, List<Integer> best) {
+        if (best.isEmpty()) {
+            return true;
+        }
+        for (int i = 0; i < current.size(); i++) {
+            if (current.get(i) < best.get(i)) {
+                return true;
+            } else if (current.get(i) > best.get(i)) {
+                return false;
+            }
+        }
+        return false;
+    }
 }`
   },
   {
@@ -2055,6 +3763,91 @@ export const examples = [
   // 计算平均等待时间
   const totalWaitingTime = waitingTimes.reduce((sum, time) => sum + time, 0);
   return totalWaitingTime / n;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+import java.util.Comparator;
+
+public class Solution {
+    public static double calculateSJFAverageWaitingTime(int[][] tasks) {
+        int n = tasks.length;
+        
+        // 复制作业信息，包含请求时间、持续时间、是否完成和索引
+        List<Task> taskInfo = new ArrayList<>();
+        for (int i = 0; i < n; i++) {
+            int request = tasks[i][0];
+            int duration = tasks[i][1];
+            taskInfo.add(new Task(request, duration, false, i));
+        }
+        
+        int[] waitingTimes = new int[n];
+        int currentTime = 0;
+        int completedTasks = 0;
+        
+        while (completedTasks < n) {
+            // 找出所有已经到达且未完成的任务
+            List<Task> availableTasks = new ArrayList<>();
+            for (Task task : taskInfo) {
+                if (!task.completed && task.request <= currentTime) {
+                    availableTasks.add(task);
+                }
+            }
+            
+            if (!availableTasks.isEmpty()) {
+                // 选择持续时间最小的任务，如果持续时间相同，选择请求时间最早的
+                availableTasks.sort(new Comparator<Task>() {
+                    @Override
+                    public int compare(Task a, Task b) {
+                        if (a.duration != b.duration) {
+                            return a.duration - b.duration;
+                        }
+                        return a.request - b.request;
+                    }
+                });
+                
+                Task selectedTask = availableTasks.get(0);
+                // 计算等待时间
+                waitingTimes[selectedTask.index] = currentTime - selectedTask.request;
+                // 更新当前时间
+                currentTime += selectedTask.duration;
+                // 标记任务为完成
+                selectedTask.completed = true;
+                completedTasks++;
+            } else {
+                // 如果没有可用任务，直接跳到下一个任务的到达时间
+                Task nextTask = null;
+                for (Task task : taskInfo) {
+                    if (!task.completed) {
+                        if (nextTask == null || task.request < nextTask.request) {
+                            nextTask = task;
+                        }
+                    }
+                }
+                currentTime = nextTask.request;
+            }
+        }
+        
+        // 计算平均等待时间
+        int totalWaitingTime = 0;
+        for (int time : waitingTimes) {
+            totalWaitingTime += time;
+        }
+        return (double) totalWaitingTime / n;
+    }
+    
+    static class Task {
+        int request;
+        int duration;
+        boolean completed;
+        int index;
+        
+        Task(int request, int duration, boolean completed, int index) {
+            this.request = request;
+            this.duration = duration;
+            this.completed = completed;
+            this.index = index;
+        }
+    }
 }`
   },
   {
@@ -2100,6 +3893,42 @@ export const examples = [
   }
   
   return primes;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> findPrimeNumbers(int n) {
+        List<Integer> primes = new ArrayList<>();
+        if (n < 2) {
+            return primes;
+        }
+        
+        // 初始化质数标记数组
+        boolean[] isPrime = new boolean[n + 1];
+        for (int i = 0; i <= n; i++) {
+            isPrime[i] = true;
+        }
+        isPrime[0] = isPrime[1] = false;
+        
+        // 筛法求质数
+        for (int i = 2; i * i <= n; i++) {
+            if (isPrime[i]) {
+                for (int j = i * i; j <= n; j += i) {
+                    isPrime[j] = false;
+                }
+            }
+        }
+        
+        // 收集所有质数
+        for (int i = 2; i <= n; i++) {
+            if (isPrime[i]) {
+                primes.add(i);
+            }
+        }
+        
+        return primes;
+    }
 }`
   },
   {
@@ -2140,6 +3969,31 @@ export const examples = [
   }
   
   return count;
+}`,
+    javaCode: `public class Solution {
+    public static int countOccurrences(String str1, String str2) {
+        // 转换为小写
+        String lowerStr1 = str1.toLowerCase();
+        String lowerStr2 = str2.toLowerCase();
+        
+        if (lowerStr2.length() == 0) {
+            return 0;
+        }
+        
+        int count = 0;
+        int index = 0;
+        
+        while (index < lowerStr1.length()) {
+            int foundIndex = lowerStr1.indexOf(lowerStr2, index);
+            if (foundIndex == -1) {
+                break;
+            }
+            count++;
+            index = foundIndex + 1;
+        }
+        
+        return count;
+    }
 }`
   },
   {
@@ -2210,6 +4064,79 @@ export const examples = [
   }
   
   return bestRoad;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    private static List<List<Integer>> adj;
+    private static int[] subtreeSize;
+    
+    public static List<Integer> findMaxTollRoad(int N, int[][] roads) {
+        // 构建邻接表
+        adj = new ArrayList<>();
+        for (int i = 0; i <= N; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        for (int[] road : roads) {
+            int u = road[0];
+            int v = road[1];
+            adj.get(u).add(v);
+            adj.get(v).add(u);
+        }
+        
+        // 计算子树大小
+        subtreeSize = new int[N + 1];
+        calculateSubtreeSize(1, -1);
+        
+        int maxRevenue = 0;
+        List<Integer> bestRoad = new ArrayList<>();
+        bestRoad.add(N);
+        bestRoad.add(N); // 初始化为最大可能的城市代码
+        
+        for (int[] road : roads) {
+            int u = road[0];
+            int v = road[1];
+            
+            // 确定父子关系
+            int parent = subtreeSize[u] > subtreeSize[v] ? u : v;
+            int child = parent == u ? v : u;
+            
+            // 计算该道路的通行费收入
+            int revenue = subtreeSize[child] * (N - subtreeSize[child]);
+            
+            // 更新最大通行费收入和最佳道路
+            if (revenue > maxRevenue) {
+                maxRevenue = revenue;
+                bestRoad.clear();
+                bestRoad.add(Math.min(u, v));
+                bestRoad.add(Math.max(u, v));
+            } else if (revenue == maxRevenue) {
+                // 如果通行费收入相同，选择城市代码较小的道路
+                int min = Math.min(u, v);
+                int max = Math.max(u, v);
+                if (min < bestRoad.get(0) || (min == bestRoad.get(0) && max < bestRoad.get(1))) {
+                    bestRoad.clear();
+                    bestRoad.add(min);
+                    bestRoad.add(max);
+                }
+            }
+        }
+        
+        return bestRoad;
+    }
+    
+    private static int calculateSubtreeSize(int node, int parent) {
+        int size = 1;
+        for (int neighbor : adj.get(node)) {
+            if (neighbor != parent) {
+                size += calculateSubtreeSize(neighbor, node);
+            }
+        }
+        subtreeSize[node] = size;
+        return size;
+    }
 }`
   },
   {
@@ -2252,6 +4179,39 @@ export const examples = [
   }
   
   return currentCells;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> cellCompetition(List<Integer> cells, int days) {
+        int n = cells.size();
+        List<Integer> currentCells = new ArrayList<>(cells);
+        
+        for (int d = 0; d < days; d++) {
+            List<Integer> nextCells = new ArrayList<>();
+            for (int i = 0; i < n; i++) {
+                nextCells.add(0);
+            }
+            
+            for (int i = 0; i < n; i++) {
+                // 计算左右邻居的状态
+                int left = i > 0 ? currentCells.get(i - 1) : 0;
+                int right = i < n - 1 ? currentCells.get(i + 1) : 0;
+                
+                // 根据规则更新细胞状态
+                if (left == right) {
+                    nextCells.set(i, 0);
+                } else {
+                    nextCells.set(i, 1);
+                }
+            }
+            
+            currentCells = nextCells;
+        }
+        
+        return currentCells;
+    }
 }`
   },
   {
@@ -2319,6 +4279,69 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
+
+public class Solution {
+    public static List<Integer> calculateReputationAfterFiring(int N, List<Integer> efficiencies, int Q, List<Integer> firings, int K) {
+        // 初始化员工效率映射
+        Map<Integer, Integer> employeeEfficiency = new HashMap<>();
+        int totalReputation = 0;
+        for (int i = 0; i < N; i++) {
+            employeeEfficiency.put(i + 1, efficiencies.get(i));
+            totalReputation += efficiencies.get(i);
+        }
+        
+        List<Integer> result = new ArrayList<>();
+        
+        for (int firedId : firings) {
+            // 解雇员工，从总声誉中减去其效率
+            int firedEfficiency = employeeEfficiency.get(firedId);
+            totalReputation -= firedEfficiency;
+            employeeEfficiency.remove(firedId);
+            
+            // 收集剩余员工的效率
+            List<Integer> remainingEfficiencies = new ArrayList<>(employeeEfficiency.values());
+            // 按效率升序排序
+            Collections.sort(remainingEfficiencies);
+            
+            // 计算需要辞职的K个同事的总效率
+            int resignedEfficiency = 0;
+            int resignCount = Math.min(K, remainingEfficiencies.size());
+            for (int i = 0; i < resignCount; i++) {
+                resignedEfficiency += remainingEfficiencies.get(i);
+            }
+            
+            // 从总声誉中减去辞职同事的效率
+            totalReputation -= resignedEfficiency;
+            
+            // 从员工映射中删除辞职的同事
+            List<Integer> resignedIds = new ArrayList<>();
+            int count = 0;
+            for (Map.Entry<Integer, Integer> entry : employeeEfficiency.entrySet()) {
+                int id = entry.getKey();
+                int efficiency = entry.getValue();
+                if (remainingEfficiencies.contains(efficiency)) {
+                    resignedIds.add(id);
+                    count++;
+                    if (count == resignCount) {
+                        break;
+                    }
+                }
+            }
+            for (int id : resignedIds) {
+                employeeEfficiency.remove(id);
+            }
+            
+            result.add(totalReputation);
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -2356,6 +4379,40 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> findLargestPlot(List<List<Integer>> houses) {
+        // 按位置排序房子
+        Collections.sort(houses, new Comparator<List<Integer>>() {
+            @Override
+            public int compare(List<Integer> a, List<Integer> b) {
+                return a.get(1) - b.get(1);
+            }
+        });
+        
+        int maxDistance = 0;
+        List<Integer> result = new ArrayList<>();
+        
+        // 找到距离最大的两个房子
+        for (int i = 0; i < houses.size() - 1; i++) {
+            for (int j = i + 1; j < houses.size(); j++) {
+                int distance = houses.get(j).get(1) - houses.get(i).get(1);
+                if (distance > maxDistance) {
+                    maxDistance = distance;
+                    result.clear();
+                    result.add(houses.get(i).get(0));
+                    result.add(houses.get(j).get(0));
+                }
+            }
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -2401,6 +4458,30 @@ export const examples = [
   // 计算最少步骤
   // 步骤数等于不同字符的数量
   return diffs.length;
+}`,
+    javaCode: `public class Solution {
+    public static int minStepsToConvert(String str1, String str2) {
+        // 如果两个字符串长度不同，无法转换
+        if (str1.length() != str2.length()) {
+            return -1;
+        }
+        
+        // 如果两个字符串已经相同，不需要转换
+        if (str1.equals(str2)) {
+            return 0;
+        }
+        
+        // 计算不同字符的位置
+        int diffCount = 0;
+        for (int i = 0; i < str1.length(); i++) {
+            if (str1.charAt(i) != str2.charAt(i)) {
+                diffCount++;
+            }
+        }
+        
+        // 步骤数等于不同字符的数量
+        return diffCount;
+    }
 }`
   },
   {
@@ -2452,6 +4533,40 @@ export const examples = [
   }
   
   return maxEnergy;
+}`,
+    javaCode: `public class Solution {
+    public static int maxEnergyFromReactor(int V, int M, int N, int[][] vials) {
+        // 动态规划表，dp[i][j][k]表示前i个瓶子，体积为j，质量为k时的最大能量
+        int[][][] dp = new int[N + 1][V + 1][M + 1];
+        
+        for (int i = 1; i <= N; i++) {
+            int mass = vials[i - 1][0];
+            int volume = vials[i - 1][1];
+            int energy = vials[i - 1][2];
+            for (int j = 0; j <= V; j++) {
+                for (int k = 0; k <= M; k++) {
+                    // 不选择第i个瓶子
+                    dp[i][j][k] = dp[i - 1][j][k];
+                    // 选择第i个瓶子（如果体积和质量都允许）
+                    if (j >= volume && k >= mass) {
+                        dp[i][j][k] = Math.max(dp[i][j][k], dp[i - 1][j - volume][k - mass] + energy);
+                    }
+                }
+            }
+        }
+        
+        // 找出所有可能的体积和质量组合中的最大能量
+        int maxEnergy = 0;
+        for (int j = 0; j <= V; j++) {
+            for (int k = 0; k <= M; k++) {
+                if (dp[N][j][k] > maxEnergy) {
+                    maxEnergy = dp[N][j][k];
+                }
+            }
+        }
+        
+        return maxEnergy;
+    }
 }`
   },
   {
@@ -2484,6 +4599,27 @@ export const examples = [
   }
   
   return totalDistance;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Solution {
+    public static int calculateBusDistance(List<Integer> stations) {
+        if (stations.size() < 2) {
+            return 0;
+        }
+        
+        // 按车站ID排序
+        Collections.sort(stations);
+        
+        int totalDistance = 0;
+        for (int i = 0; i < stations.size() - 1; i++) {
+            totalDistance += stations.get(i + 1) - stations.get(i);
+        }
+        
+        return totalDistance;
+    }
 }`
   },
   {
@@ -2539,6 +4675,48 @@ export const examples = [
   }
   
   return 0;
+}`,
+    javaCode: `import java.util.List;
+
+public class Solution {
+    public static int largestPalindromicSquareSubmatrix(List<List<Integer>> inputMat) {
+        int N = inputMat.size();
+        if (N == 0) {
+            return 0;
+        }
+        int M = inputMat.get(0).size();
+        if (M == 0) {
+            return 0;
+        }
+        
+        // 检查所有可能的正方形子矩阵
+        for (int size = Math.min(N, M); size >= 1; size--) {
+            for (int i = 0; i <= N - size; i++) {
+                for (int j = 0; j <= M - size; j++) {
+                    // 检查是否是回文矩阵
+                    boolean isPalindromic = true;
+                    for (int x = 0; x < size; x++) {
+                        for (int y = 0; y < size; y++) {
+                            int val1 = inputMat.get(i + x).get(j + y);
+                            int val2 = inputMat.get(i + size - 1 - x).get(j + size - 1 - y);
+                            if (val1 != val2) {
+                                isPalindromic = false;
+                                break;
+                            }
+                        }
+                        if (!isPalindromic) {
+                            break;
+                        }
+                    }
+                    if (isPalindromic) {
+                        return size * size;
+                    }
+                }
+            }
+        }
+        
+        return 0;
+    }
 }`
   },
   {
@@ -2581,6 +4759,39 @@ export const examples = [
   }
   
   return currentLights;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> streetLightsAfterMDays(List<Integer> lights, int M) {
+        int n = lights.size();
+        List<Integer> currentLights = new ArrayList<>(lights);
+        
+        for (int day = 0; day < M; day++) {
+            List<Integer> nextLights = new ArrayList<>();
+            for (int i = 0; i < n; i++) {
+                nextLights.add(0);
+            }
+            
+            for (int i = 0; i < n; i++) {
+                // 计算左右邻居的状态
+                int left = i > 0 ? currentLights.get(i - 1) : 0;
+                int right = i < n - 1 ? currentLights.get(i + 1) : 0;
+                
+                // 根据规则更新灯光状态
+                if (left == right) {
+                    nextLights.set(i, 0);
+                } else {
+                    nextLights.set(i, 1);
+                }
+            }
+            
+            currentLights = nextLights;
+        }
+        
+        return currentLights;
+    }
 }`
   },
   {
@@ -2653,6 +4864,86 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> maxRestTime(int N, int M, int[][] roads, int Q, int[][] complaints) {
+        // 构建邻接表
+        List<List<Edge>> adj = new ArrayList<>();
+        for (int i = 0; i <= N; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        for (int[] road : roads) {
+            int A = road[0];
+            int B = road[1];
+            int C = road[2];
+            adj.get(A).add(new Edge(B, C));
+            adj.get(B).add(new Edge(A, C));
+        }
+        
+        // 使用Dijkstra算法计算从总部（区域1）到所有其他区域的最短时间
+        int[] shortestTime = new int[N + 1];
+        for (int i = 1; i <= N; i++) {
+            shortestTime[i] = Integer.MAX_VALUE;
+        }
+        shortestTime[1] = 0;
+        boolean[] visited = new boolean[N + 1];
+        
+        for (int i = 1; i <= N; i++) {
+            // 找到未访问的最短时间节点
+            int minTime = Integer.MAX_VALUE;
+            int u = -1;
+            for (int j = 1; j <= N; j++) {
+                if (!visited[j] && shortestTime[j] < minTime) {
+                    minTime = shortestTime[j];
+                    u = j;
+                }
+            }
+            
+            if (u == -1) {
+                break;
+            }
+            
+            visited[u] = true;
+            
+            // 更新相邻节点的最短时间
+            for (Edge edge : adj.get(u)) {
+                int v = edge.node;
+                int w = edge.time;
+                if (!visited[v] && shortestTime[v] > shortestTime[u] + w) {
+                    shortestTime[v] = shortestTime[u] + w;
+                }
+            }
+        }
+        
+        // 计算每个投诉的最大休息时间
+        List<Integer> result = new ArrayList<>();
+        for (int[] complaint : complaints) {
+            int X = complaint[0];
+            int K = complaint[1];
+            int roundTripTime = shortestTime[X] * 2;
+            if (roundTripTime <= K) {
+                result.add(K - roundTripTime);
+            } else {
+                result.add(0);
+            }
+        }
+        
+        return result;
+    }
+    
+    static class Edge {
+        int node;
+        int time;
+        
+        Edge(int node, int time) {
+            this.node = node;
+            this.time = time;
+        }
+    }
 }`
   },
   {
@@ -2682,6 +4973,34 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.HashSet;
+import java.util.Set;
+
+public class Solution {
+    public static String eliminateVowels(String str) {
+        Set<Character> vowels = new HashSet<>();
+        vowels.add('a');
+        vowels.add('e');
+        vowels.add('i');
+        vowels.add('o');
+        vowels.add('u');
+        vowels.add('A');
+        vowels.add('E');
+        vowels.add('I');
+        vowels.add('O');
+        vowels.add('U');
+        
+        StringBuilder result = new StringBuilder();
+        
+        for (char c : str.toCharArray()) {
+            if (!vowels.contains(c)) {
+                result.append(c);
+            }
+        }
+        
+        return result.toString();
+    }
 }`
   },
   {
@@ -2744,6 +5063,55 @@ export const examples = [
   }
   
   return routes;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static int minimumStraightRoutes(List<List<Integer>> cities) {
+        if (cities.size() <= 2) {
+            return cities.isEmpty() ? 0 : 1;
+        }
+        
+        int routes = 0;
+        boolean[] used = new boolean[cities.size()];
+        
+        for (int i = 0; i < cities.size(); i++) {
+            if (!used[i]) {
+                routes++;
+                // 找到与当前点在同一直线上的所有点
+                for (int j = i + 1; j < cities.size(); j++) {
+                    if (!used[j]) {
+                        double slope = getSlope(cities.get(i), cities.get(j));
+                        // 检查所有其他点是否在这条直线上
+                        boolean isCollinear = true;
+                        for (int k = 0; k < cities.size(); k++) {
+                            if (!used[k] && k != i && k != j) {
+                                double slope2 = getSlope(cities.get(i), cities.get(k));
+                                if (slope != slope2) {
+                                    isCollinear = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (isCollinear) {
+                            used[j] = true;
+                        }
+                    }
+                }
+                used[i] = true;
+            }
+        }
+        
+        return routes;
+    }
+    
+    private static double getSlope(List<Integer> p1, List<Integer> p2) {
+        if (p1.get(0).equals(p2.get(0))) {
+            return Double.POSITIVE_INFINITY; // 垂直直线
+        }
+        return (double) (p2.get(1) - p1.get(1)) / (p2.get(0) - p1.get(0));
+    }
 }`
   },
   {
@@ -2803,6 +5171,59 @@ export const examples = [
   }
   
   return [maxF, bestV2];
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> maximizeCommonFootsteps(int X1, int V1, int N, int X2) {
+        // 计算父亲的所有脚步位置
+        List<Integer> fatherSteps = new ArrayList<>();
+        for (int i = 0; i <= N; i++) {
+            fatherSteps.add(X1 + i * V1);
+        }
+        
+        // 找到Martin的起始位置对应的父亲脚步索引
+        int startIndex = fatherSteps.indexOf(X2);
+        if (startIndex == -1) {
+            List<Integer> result = new ArrayList<>();
+            result.add(0);
+            result.add(0);
+            return result;
+        }
+        
+        int maxF = 0;
+        int bestV2 = 0;
+        
+        // 尝试所有可能的步长
+        for (int i = startIndex + 1; i <= N; i++) {
+            int distance = fatherSteps.get(i) - X2;
+            int steps = i - startIndex;
+            int v2 = distance / steps;
+            
+            // 检查是否所有中间脚步都在父亲的脚步中
+            boolean valid = true;
+            for (int j = 1; j < steps; j++) {
+                int position = X2 + j * v2;
+                if (!fatherSteps.contains(position)) {
+                    valid = false;
+                    break;
+                }
+            }
+            
+            if (valid) {
+                if (steps > maxF || (steps == maxF && v2 > bestV2)) {
+                    maxF = steps;
+                    bestV2 = v2;
+                }
+            }
+        }
+        
+        List<Integer> result = new ArrayList<>();
+        result.add(maxF);
+        result.add(bestV2);
+        return result;
+    }
 }`
   },
   {
@@ -2870,6 +5291,64 @@ export const examples = [
   }
   
   return count;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static int countIntersectingRoutes(List<List<Integer>> routes) {
+        int count = 0;
+        
+        // 检查每对路线
+        for (int i = 0; i < routes.size(); i++) {
+            for (int j = i + 1; j < routes.size(); j++) {
+                List<Integer> route1 = routes.get(i);
+                List<Integer> route2 = routes.get(j);
+                
+                int x1 = route1.get(0), y1 = route1.get(1);
+                int x2 = route1.get(2), y2 = route1.get(3);
+                int x3 = route2.get(0), y3 = route2.get(1);
+                int x4 = route2.get(2), y4 = route2.get(3);
+                
+                if (doIntersect(x1, y1, x2, y2, x3, y3, x4, y4)) {
+                    count++;
+                }
+            }
+        }
+        
+        return count;
+    }
+    
+    private static int orientation(int x1, int y1, int x2, int y2, int x3, int y3) {
+        int val = (y2 - y1) * (x3 - x2) - (x2 - x1) * (y3 - y2);
+        if (val == 0) return 0; // 共线
+        return val > 0 ? 1 : 2; // 顺时针或逆时针
+    }
+    
+    private static boolean onSegment(int x1, int y1, int x2, int y2, int x3, int y3) {
+        return x2 <= Math.max(x1, x3) && x2 >= Math.min(x1, x3) &&
+               y2 <= Math.max(y1, y3) && y2 >= Math.min(y1, y3);
+    }
+    
+    private static boolean doIntersect(int x1, int y1, int x2, int y2, int x3, int y3, int x4, int y4) {
+        int o1 = orientation(x1, y1, x2, y2, x3, y3);
+        int o2 = orientation(x1, y1, x2, y2, x4, y4);
+        int o3 = orientation(x3, y3, x4, y4, x1, y1);
+        int o4 = orientation(x3, y3, x4, y4, x2, y2);
+        
+        // 一般情况
+        if (o1 != o2 && o3 != o4) {
+            return true;
+        }
+        
+        // 特殊情况 - 共线
+        if (o1 == 0 && onSegment(x1, y1, x3, y3, x2, y2)) return true;
+        if (o2 == 0 && onSegment(x1, y1, x4, y4, x2, y2)) return true;
+        if (o3 == 0 && onSegment(x3, y3, x1, y1, x4, y4)) return true;
+        if (o4 == 0 && onSegment(x3, y3, x2, y2, x4, y4)) return true;
+        
+        return false;
+    }
 }`
   },
   {
@@ -2922,6 +5401,55 @@ export const examples = [
   
   dfs(warehouse);
   return count;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class Solution {
+    private static List<List<Integer>> adj;
+    private static Set<Integer> requested;
+    private static Set<Integer> visited;
+    private static int count;
+    
+    public static int maximizeOutletsDelivery(int N, int K, List<Integer> requests, int warehouse, List<List<Integer>> roads) {
+        // 构建邻接表
+        adj = new ArrayList<>();
+        for (int i = 0; i <= N; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        for (List<Integer> road : roads) {
+            int u = road.get(0);
+            int v = road.get(1);
+            adj.get(u).add(v);
+            adj.get(v).add(u);
+        }
+        
+        // 标记请求的网点
+        requested = new HashSet<>(requests);
+        
+        // 深度优先搜索
+        visited = new HashSet<>();
+        count = 0;
+        dfs(warehouse);
+        
+        return count;
+    }
+    
+    private static void dfs(int node) {
+        visited.add(node);
+        if (requested.contains(node)) {
+            count++;
+        }
+        
+        for (int neighbor : adj.get(node)) {
+            if (!visited.contains(neighbor)) {
+                dfs(neighbor);
+            }
+        }
+    }
 }`
   },
   {
@@ -2966,6 +5494,42 @@ export const examples = [
   }
   
   return maxVapor;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Solution {
+    public static int maximumVaporRate(List<Integer> chemicals) {
+        int n = chemicals.size();
+        int maxVapor = 0;
+        
+        // 尝试所有可能的两组大小
+        for (int size = 1; size <= n / 2; size++) {
+            // 尝试所有可能的起始位置
+            for (int start1 = 0; start1 <= n - 2 * size; start1++) {
+                int start2 = start1 + size;
+                
+                // 创建反转后的第二组
+                List<Integer> secondSet = new ArrayList<>();
+                for (int i = start2 + size - 1; i >= start2; i--) {
+                    secondSet.add(chemicals.get(i));
+                }
+                
+                // 计算总蒸汽率
+                int totalVapor = 0;
+                for (int i = 0; i < size; i++) {
+                    totalVapor += chemicals.get(start1 + i) * secondSet.get(i);
+                }
+                
+                if (totalVapor > maxVapor) {
+                    maxVapor = totalVapor;
+                }
+            }
+        }
+        
+        return maxVapor;
+    }
 }`
   },
   {
@@ -2996,6 +5560,36 @@ export const examples = [
   
   // 合并结果
   return [...firstK, ...remaining];
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> arrangeFlowerSticks(int N, int K, List<Integer> lengths) {
+        // 按长度排序
+        List<Integer> sorted = new ArrayList<>(lengths);
+        Collections.sort(sorted);
+        
+        // 前K个按递增顺序
+        List<Integer> firstK = new ArrayList<>();
+        for (int i = 0; i < K; i++) {
+            firstK.add(sorted.get(i));
+        }
+        
+        // 剩余的按递减顺序
+        List<Integer> remaining = new ArrayList<>();
+        for (int i = K; i < sorted.size(); i++) {
+            remaining.add(sorted.get(i));
+        }
+        Collections.reverse(remaining);
+        
+        // 合并结果
+        List<Integer> result = new ArrayList<>(firstK);
+        result.addAll(remaining);
+        
+        return result;
+    }
 }`
   },
   {
@@ -3026,6 +5620,26 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class Solution {
+    public static List<Integer> removeDuplicates(List<Integer> numbers) {
+        Set<Integer> seen = new HashSet<>();
+        List<Integer> result = new ArrayList<>();
+        
+        for (int num : numbers) {
+            if (!seen.contains(num)) {
+                seen.add(num);
+                result.add(num);
+            }
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -3062,6 +5676,27 @@ export const examples = [
   }
   
   return count;
+}`,
+    javaCode: `public class Solution {
+    public static int countOccurrencesInNumber(int haystack, int needle) {
+        // 将数字转换为字符串
+        String haystackStr = String.valueOf(haystack);
+        String needleStr = String.valueOf(needle);
+        
+        int count = 0;
+        int index = 0;
+        
+        while (index < haystackStr.length()) {
+            int foundIndex = haystackStr.indexOf(needleStr, index);
+            if (foundIndex == -1) {
+                break;
+            }
+            count++;
+            index = foundIndex + 1;
+        }
+        
+        return count;
+    }
 }`
   },
   {
@@ -3102,6 +5737,31 @@ export const examples = [
   }
   
   return count;
+}`,
+    javaCode: `public class Solution {
+    public static int countWordOccurrences(String word, String sentence) {
+        // 转换为小写
+        String lowerWord = word.toLowerCase();
+        String lowerSentence = sentence.toLowerCase();
+        
+        if (lowerWord.length() == 0) {
+            return 0;
+        }
+        
+        int count = 0;
+        int index = 0;
+        
+        while (index < lowerSentence.length()) {
+            int foundIndex = lowerSentence.indexOf(lowerWord, index);
+            if (foundIndex == -1) {
+                break;
+            }
+            count++;
+            index = foundIndex + lowerWord.length();
+        }
+        
+        return count;
+    }
 }`
   },
   {
@@ -3135,6 +5795,34 @@ export const examples = [
   
   // 否则，可以工作所有模块数
   return totalModules;
+}`,
+    javaCode: `import java.util.List;
+
+public class Solution {
+    public static int employeeWorkWeeks(int N, List<Integer> C) {
+        // 计算所有项目的总模块数
+        int totalModules = 0;
+        for (int count : C) {
+            totalModules += count;
+        }
+        
+        // 找出最大的模块数
+        int maxModules = Integer.MIN_VALUE;
+        for (int count : C) {
+            if (count > maxModules) {
+                maxModules = count;
+            }
+        }
+        
+        // 如果最大模块数超过其他所有模块数之和加1，则最多只能工作其他所有模块数之和的2倍加1
+        int sumOther = totalModules - maxModules;
+        if (maxModules > sumOther + 1) {
+            return sumOther * 2 + 1;
+        }
+        
+        // 否则，可以工作所有模块数
+        return totalModules;
+    }
 }`
   },
   {
@@ -3184,6 +5872,50 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Solution {
+    public static List<String> mostFrequentCharacters(String s, List<List<Integer>> queries) {
+        List<String> result = new ArrayList<>();
+        
+        for (List<Integer> query : queries) {
+            int L = query.get(0);
+            int R = query.get(1);
+            
+            // 提取子字符串
+            String subStr = s.substring(L, R + 1);
+            
+            // 计算字符频率
+            Map<Character, Integer> frequency = new HashMap<>();
+            for (char c : subStr.toCharArray()) {
+                frequency.put(c, frequency.getOrDefault(c, 0) + 1);
+            }
+            
+            // 找出最频繁的字符
+            int maxFreq = 0;
+            List<Character> mostFrequent = new ArrayList<>();
+            for (Map.Entry<Character, Integer> entry : frequency.entrySet()) {
+                int freq = entry.getValue();
+                if (freq > maxFreq) {
+                    maxFreq = freq;
+                    mostFrequent.clear();
+                    mostFrequent.add(entry.getKey());
+                } else if (freq == maxFreq) {
+                    mostFrequent.add(entry.getKey());
+                }
+            }
+            
+            // 按字母顺序排序并添加到结果
+            mostFrequent.sort(null);
+            result.add(String.valueOf(mostFrequent.get(0)));
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -3236,6 +5968,50 @@ export const examples = [
   }
   
   return clusters;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    private static List<List<Integer>> adj;
+    private static boolean[] visited;
+    
+    public static int numberOfCityClusters(int cities, List<List<Integer>> roads) {
+        // 构建邻接表
+        adj = new ArrayList<>();
+        for (int i = 0; i < cities; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        for (List<Integer> road : roads) {
+            int u = road.get(0);
+            int v = road.get(1);
+            adj.get(u).add(v);
+            adj.get(v).add(u);
+        }
+        
+        visited = new boolean[cities];
+        int clusters = 0;
+        
+        // 计算集群数量
+        for (int i = 0; i < cities; i++) {
+            if (!visited[i]) {
+                clusters++;
+                dfs(i);
+            }
+        }
+        
+        return clusters;
+    }
+    
+    private static void dfs(int node) {
+        visited[node] = true;
+        for (int neighbor : adj.get(node)) {
+            if (!visited[neighbor]) {
+                dfs(neighbor);
+            }
+        }
+    }
 }`
   },
   {
@@ -3288,6 +6064,49 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Solution {
+    public static List<Integer> sortByFrequency(List<Integer> numbers) {
+        // 计算频率
+        Map<Integer, Integer> frequency = new HashMap<>();
+        for (int num : numbers) {
+            frequency.put(num, frequency.getOrDefault(num, 0) + 1);
+        }
+        
+        // 记录元素出现的顺序
+        List<Integer> order = new ArrayList<>();
+        List<Integer> seen = new ArrayList<>();
+        for (int num : numbers) {
+            if (!seen.contains(num)) {
+                order.add(num);
+                seen.add(num);
+            }
+        }
+        
+        // 按频率降序排序，频率相同的按出现顺序排序
+        order.sort((a, b) -> {
+            if (!frequency.get(b).equals(frequency.get(a))) {
+                return frequency.get(b) - frequency.get(a);
+            }
+            return order.indexOf(a) - order.indexOf(b);
+        });
+        
+        // 构建结果
+        List<Integer> result = new ArrayList<>();
+        for (int num : order) {
+            int freq = frequency.get(num);
+            for (int i = 0; i < freq; i++) {
+                result.add(num);
+            }
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -3358,6 +6177,76 @@ export const examples = [
   }
   
   return minDistance;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+public class Solution {
+    public static int shortestRouteWithMagicSpells(int N, List<List<Integer>> roads, int K, int start, int end) {
+        // 构建邻接表
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < N; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        for (List<Integer> road : roads) {
+            int u = road.get(0);
+            int v = road.get(1);
+            adj.get(u).add(v);
+            adj.get(v).add(u);
+        }
+        
+        // BFS，记录到达每个节点的最短距离和使用的魔法次数
+        int[][] visited = new int[N][K + 1];
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j <= K; j++) {
+                visited[i][j] = -1;
+            }
+        }
+        
+        LinkedList<int[]> queue = new LinkedList<>();
+        queue.add(new int[]{start, 0, 0}); // [当前节点, 距离, 使用的魔法次数]
+        visited[start][0] = 0;
+        
+        while (!queue.isEmpty()) {
+            int[] current = queue.poll();
+            int node = current[0];
+            int distance = current[1];
+            int magicUsed = current[2];
+            
+            if (node == end) {
+                return distance;
+            }
+            
+            // 遍历所有邻居
+            for (int neighbor : adj.get(node)) {
+                // 不使用魔法
+                if (visited[neighbor][magicUsed] == -1) {
+                    visited[neighbor][magicUsed] = distance + 1;
+                    queue.add(new int[]{neighbor, distance + 1, magicUsed});
+                }
+                
+                // 使用魔法（如果还有剩余次数）
+                if (magicUsed < K && visited[neighbor][magicUsed + 1] == -1) {
+                    visited[neighbor][magicUsed + 1] = distance; // 距离不变
+                    queue.add(new int[]{neighbor, distance, magicUsed + 1});
+                }
+            }
+        }
+        
+        // 找到到达end的最短距离
+        int minDistance = -1;
+        for (int i = 0; i <= K; i++) {
+            if (visited[end][i] != -1) {
+                if (minDistance == -1 || visited[end][i] < minDistance) {
+                    minDistance = visited[end][i];
+                }
+            }
+        }
+        
+        return minDistance;
+    }
 }`
   },
   {
@@ -3400,6 +6289,37 @@ export const examples = [
   }
   
   return misses;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+public class Solution {
+    public static int calculateFIFOCacheMisses(int cacheSize, List<Integer> pageRequests) {
+        if (cacheSize == 0) {
+            return pageRequests.size();
+        }
+        
+        List<Integer> cache = new LinkedList<>();
+        int misses = 0;
+        
+        for (int page : pageRequests) {
+            if (!cache.contains(page)) {
+                // 缓存未命中
+                misses++;
+                
+                if (cache.size() >= cacheSize) {
+                    // 缓存已满，删除最早的页面
+                    cache.remove(0);
+                }
+                
+                // 添加新页面到缓存
+                cache.add(page);
+            }
+        }
+        
+        return misses;
+    }
 }`
   },
   {
@@ -3446,6 +6366,54 @@ export const examples = [
   }
   
   return bestUser;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Queue;
+import java.util.LinkedList;
+
+public class Solution {
+    public static int maximizeSocialNetworkPromotion(Map<Integer, List<Integer>> users) {
+        int maxReach = 0;
+        int bestUser = -1;
+        
+        // 计算每个用户的 reach
+        for (int userId : users.keySet()) {
+            Map<Integer, List<Integer>> userMap = users;
+            List<Integer> friends = userMap.get(userId);
+            
+            if (friends == null) {
+                continue;
+            }
+            
+            Set<Integer> visited = new java.util.HashSet<>();
+            Queue<Integer> queue = new LinkedList<>();
+            queue.add(userId);
+            visited.add(userId);
+            
+            while (!queue.isEmpty()) {
+                int current = queue.poll();
+                List<Integer> currentFriends = userMap.get(current);
+                if (currentFriends != null) {
+                    for (int friend : currentFriends) {
+                        if (!visited.contains(friend)) {
+                            visited.add(friend);
+                            queue.add(friend);
+                        }
+                        }
+                    }
+                }
+            
+            if (visited.size() > maxReach) {
+                maxReach = visited.size();
+                bestUser = userId;
+            }
+        }
+        
+        return bestUser;
+    }
 }`
   },
   {
@@ -3494,6 +6462,57 @@ export const examples = [
   
   // 最大距离即为最小迭代次数
   return Math.max(...distance);
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
+public class Solution {
+    public static int minimumSatelliteTransferIterations(int N, List<List<Integer>> bandwidth) {
+        // 构建邻接表
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i < N; i++) {
+            adj.add(new ArrayList<>());
+        }
+        
+        for (List<Integer> edge : bandwidth) {
+            int u = edge.get(0);
+            int v = edge.get(1);
+            adj.get(u).add(v);
+            adj.get(v).add(u);
+        }
+        
+        // BFS计算每个卫星与主卫星的距离
+        int[] distance = new int[N];
+        for (int i = 0; i < N; i++) {
+            distance[i] = -1;
+        }
+        
+        Queue<Integer> queue = new LinkedList<>();
+        queue.add(0);
+        distance[0] = 0;
+        
+        while (!queue.isEmpty()) {
+            int current = queue.poll();
+            for (int neighbor : adj.get(current)) {
+                if (distance[neighbor] == -1) {
+                    distance[neighbor] = distance[current] + 1;
+                    queue.add(neighbor);
+                }
+            }
+        }
+        
+        // 最大距离即为最小迭代次数
+        int maxDistance = 0;
+        for (int i = 0; i < N; i++) {
+            if (distance[i] > maxDistance) {
+                maxDistance = distance[i];
+            }
+        }
+        
+        return maxDistance;
+    }
 }`
   },
   {
@@ -3523,6 +6542,36 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class Solution {
+    public static List<String> housesNotToBeRenovated(List<String> houses) {
+        Set<Character> vowels = new HashSet<>();
+        vowels.add('a');
+        vowels.add('e');
+        vowels.add('i');
+        vowels.add('o');
+        vowels.add('u');
+        vowels.add('A');
+        vowels.add('E');
+        vowels.add('I');
+        vowels.add('O');
+        vowels.add('U');
+        
+        List<String> result = new ArrayList<>();
+        
+        for (String house : houses) {
+            if (!vowels.contains(house.charAt(0))) {
+                result.add(house);
+            }
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -3566,6 +6615,40 @@ export const examples = [
   commonProducts.sort((a, b) => a - b);
   
   return commonProducts;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Solution {
+    public static List<Integer> mostFrequentlyPurchasedProducts(int N, List<List<Integer>> customers) {
+        if (N == 0) {
+            return new ArrayList<>();
+        }
+        
+        // 计算每个产品的购买次数
+        Map<Integer, Integer> frequency = new HashMap<>();
+        for (List<Integer> combo : customers) {
+            for (int product : combo) {
+                frequency.put(product, frequency.getOrDefault(product, 0) + 1);
+            }
+        }
+        
+        // 找出所有客户都购买的产品
+        List<Integer> commonProducts = new ArrayList<>();
+        for (Map.Entry<Integer, Integer> entry : frequency.entrySet()) {
+            if (entry.getValue() == N) {
+                commonProducts.add(entry.getKey());
+            }
+        }
+        
+        // 按字典序排序
+        Collections.sort(commonProducts);
+        
+        return commonProducts;
+    }
 }`
   },
   {
@@ -3613,6 +6696,48 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Solution {
+    public static List<Integer> distributorEnergyDrinkQueries(List<List<Integer>> queries) {
+        // 存储客户ID和购买数量
+        Map<Integer, Integer> customerPurchases = new HashMap<>();
+        // 存储类型2查询的结果
+        List<Integer> result = new ArrayList<>();
+        
+        for (List<Integer> query : queries) {
+            int queryType = query.get(0);
+            if (queryType == 1) {
+                // 类型1查询：添加或更新客户购买记录
+                int customerId = query.get(1);
+                int quantity = query.get(2);
+                if (customerPurchases.containsKey(customerId)) {
+                    customerPurchases.put(customerId, customerPurchases.get(customerId) + quantity);
+                } else {
+                    customerPurchases.put(customerId, quantity);
+                }
+            } else if (queryType == 2) {
+                // 类型2查询：计算给定ID范围内的总购买量
+                int startId = query.get(1);
+                int endId = query.get(2);
+                int totalQuantity = 0;
+                for (Map.Entry<Integer, Integer> entry : customerPurchases.entrySet()) {
+                    int customerId = entry.getKey();
+                    int quantity = entry.getValue();
+                    if (customerId >= startId && customerId <= endId) {
+                        totalQuantity += quantity;
+                    }
+                }
+                result.add(totalQuantity);
+            }
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -3667,6 +6792,44 @@ export const examples = [
   }
   
   return count;
+}`,
+    javaCode: `public class Solution {
+    public static int numberOfHouses(int[][] grid) {
+        if (grid.length == 0 || grid[0].length == 0) {
+            return 0;
+        }
+        
+        int N = grid.length;
+        int M = grid[0].length;
+        boolean[][] visited = new boolean[N][M];
+        int count = 0;
+        
+        // 深度优先搜索
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
+                if (!visited[i][j] && grid[i][j] == 1) {
+                    count++;
+                    dfs(i, j, N, M, grid, visited);
+                }
+            }
+        }
+        
+        return count;
+    }
+    
+    private static void dfs(int i, int j, int N, int M, int[][] grid, boolean[][] visited) {
+        if (i < 0 || i >= N || j < 0 || j >= M || visited[i][j] || grid[i][j] == 0) {
+            return;
+        }
+        
+        visited[i][j] = true;
+        
+        // 访问上下左右四个方向
+        dfs(i - 1, j, N, M, grid, visited); // 上
+        dfs(i + 1, j, N, M, grid, visited); // 下
+        dfs(i, j - 1, N, M, grid, visited); // 左
+        dfs(i, j + 1, N, M, grid, visited); // 右
+    }
 }`
   },
   {
@@ -3721,6 +6884,45 @@ export const examples = [
   }
   
   return totalScore;
+}`,
+    javaCode: `public class Solution {
+    public static int calculateGroupID(int[] PFR) {
+        int n = PFR.length;
+        int totalScore = 0;
+        
+        for (int i = 0; i < n; i++) {
+            boolean hasHigher = false;
+            boolean hasSmallerAfterHigher = false;
+            
+            // 检查后面是否有更高的PFR
+            for (int j = i + 1; j < n; j++) {
+                if (PFR[j] > PFR[i]) {
+                    hasHigher = true;
+                    // 检查这个更高的PFR后面是否有更小的PFR
+                    for (int k = j + 1; k < n; k++) {
+                        if (PFR[k] < PFR[j]) {
+                            hasSmallerAfterHigher = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            if (!hasHigher) {
+                // 后面没有更高的PFR，得15分
+                totalScore += 15;
+            } else if (hasSmallerAfterHigher) {
+                // 后面有更高的PFR，且那个更高的PFR后面有更小的PFR，得5分
+                totalScore += 5;
+            } else {
+                // 后面有更高的PFR，但那个更高的PFR后面没有更小的PFR，得10分
+                totalScore += 10;
+            }
+        }
+        
+        return totalScore;
+    }
 }`
   },
   {
@@ -3770,6 +6972,40 @@ export const examples = [
   }
   
   return dfs(0, 0) ? 1 : 0;
+}`,
+    javaCode: `public class Solution {
+    public static int mouseInMaze(int[][] maze) {
+        if (maze.length == 0 || maze[0].length == 0) {
+            return 0;
+        }
+        
+        int N = maze.length;
+        int M = maze[0].length;
+        boolean[][] visited = new boolean[N][M];
+        
+        // 深度优先搜索
+        return dfs(0, 0, N, M, maze, visited) ? 1 : 0;
+    }
+    
+    private static boolean dfs(int i, int j, int N, int M, int[][] maze, boolean[][] visited) {
+        if (i < 0 || i >= N || j < 0 || j >= M || visited[i][j] || maze[i][j] == 0) {
+            return false;
+        }
+        
+        if (maze[i][j] == 9) {
+            return true;
+        }
+        
+        visited[i][j] = true;
+        
+        // 访问上下左右四个方向
+        if (dfs(i - 1, j, N, M, maze, visited)) return true; // 上
+        if (dfs(i + 1, j, N, M, maze, visited)) return true; // 下
+        if (dfs(i, j - 1, N, M, maze, visited)) return true; // 左
+        if (dfs(i, j + 1, N, M, maze, visited)) return true; // 右
+        
+        return false;
+    }
 }`
   },
   {
@@ -3810,6 +7046,28 @@ export const examples = [
   }
   
   return Math.max(...dp[N-1]);
+}`,
+    javaCode: `public class Solution {
+    public static int maximumSalary(int N, int[] easy, int[] difficult) {
+        int[][] dp = new int[N][3];
+        
+        dp[0][0] = 0;
+        dp[0][1] = easy[0];
+        dp[0][2] = difficult[0];
+        
+        for (int i = 1; i < N; i++) {
+            // 第i天不工作，可以从第i-1天的任何状态转移而来
+            dp[i][0] = Math.max(Math.max(dp[i-1][0], dp[i-1][1]), dp[i-1][2]);
+            
+            // 第i天做简单任务，可以从第i-1天的任何状态转移而来
+            dp[i][1] = Math.max(Math.max(dp[i-1][0], dp[i-1][1]), dp[i-1][2]) + easy[i];
+            
+            // 第i天做困难任务，只能从第i-1天不工作的状态转移而来
+            dp[i][2] = dp[i-1][0] + difficult[i];
+        }
+        
+        return Math.max(Math.max(dp[N-1][0], dp[N-1][1]), dp[N-1][2]);
+    }
 }`
   },
   {
@@ -3856,6 +7114,37 @@ export const examples = [
   const area2 = 0.5 * Math.pow(r2, 2) * (theta2 - Math.sin(theta2));
   
   return parseFloat((area1 + area2).toFixed(2));
+}`,
+    javaCode: `public class Solution {
+    public static double areaOfIntersection(double[] circle1, double[] circle2) {
+        double x1 = circle1[0], y1 = circle1[1], r1 = circle1[2];
+        double x2 = circle2[0], y2 = circle2[1], r2 = circle2[2];
+        
+        // 计算两圆心之间的距离
+        double d = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        
+        // 情况1：两圆不相交
+        if (d >= r1 + r2) {
+            return 0;
+        }
+        
+        // 情况2：一个圆完全包含另一个圆
+        if (d <= Math.abs(r1 - r2)) {
+            return Math.PI * Math.pow(Math.min(r1, r2), 2);
+        }
+        
+        // 情况3：两圆部分相交
+        double a = (Math.pow(r1, 2) - Math.pow(r2, 2) + Math.pow(d, 2)) / (2 * d);
+        double h = Math.sqrt(Math.pow(r1, 2) - Math.pow(a, 2));
+        
+        double theta1 = 2 * Math.acos(a / r1);
+        double theta2 = 2 * Math.acos((d - a) / r2);
+        
+        double area1 = 0.5 * Math.pow(r1, 2) * (theta1 - Math.sin(theta1));
+        double area2 = 0.5 * Math.pow(r2, 2) * (theta2 - Math.sin(theta2));
+        
+        return Math.round((area1 + area2) * 100.0) / 100.0;
+    }
 }`
   },
   {
@@ -3892,6 +7181,56 @@ export const examples = [
   
   // 返回前M个数字
   return numbers.slice(0, M);
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> alienHandshakeCommunication(int[] numbers, int M) {
+        // 按二进制中1的个数降序排序，如果1的个数相同，则按数值降序排序
+        List<Integer> list = new ArrayList<>();
+        for (int num : numbers) {
+            list.add(num);
+        }
+        
+        Collections.sort(list, new Comparator<Integer>() {
+            public int compare(Integer a, Integer b) {
+                int onesA = countOnes(a);
+                int onesB = countOnes(b);
+                if (onesA != onesB) {
+                    return onesB - onesA; // 按1的个数降序
+                }
+                return b - a; // 按数值降序
+            }
+            
+            private int countOnes(int n) {
+                String binary = Integer.toBinaryString(n);
+                int count = 0;
+                for (char c : binary.toCharArray()) {
+                    if (c == '1') {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        });
+        
+        // 返回前M个数字
+        return list.subList(0, M);
+    }
+    
+    private static int countOnes(int n) {
+        String binary = Integer.toBinaryString(n);
+        int count = 0;
+        for (char c : binary.toCharArray()) {
+            if (c == '1') {
+                count++;
+            }
+        }
+        return count;
+    }
 }`
   },
   {
@@ -3940,6 +7279,49 @@ export const examples = [
   }
   
   return slopes.size;
+}`,
+    javaCode: `import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class Solution {
+    public static int minimumStraightLineRoutes(List<Integer> base, List<List<Integer>> pickups) {
+        if (pickups.size() == 0) {
+            return 0;
+        }
+        
+        // 计算从基地到每个接送点的斜率
+        Set<String> slopes = new HashSet<>();
+        
+        for (List<Integer> pickup : pickups) {
+            int dx = pickup.get(0) - base.get(0);
+            int dy = pickup.get(1) - base.get(1);
+            
+            // 计算斜率的最简形式
+            String slope;
+            if (dx == 0) {
+                slope = "vertical"; // 垂直直线
+            } else if (dy == 0) {
+                slope = "horizontal"; // 水平直线
+            } else {
+                // 计算最大公约数
+                int gcd = gcd(Math.abs(dx), Math.abs(dy));
+                int sign = (dx * dy) < 0 ? -1 : 1;
+                slope = (sign * Math.abs(dy) / gcd) + "/" + (Math.abs(dx) / gcd);
+            }
+            
+            slopes.add(slope);
+        }
+        
+        return slopes.size();
+    }
+    
+    private static int gcd(int a, int b) {
+        if (b == 0) {
+            return a;
+        }
+        return gcd(b, a % b);
+    }
 }`
   },
   {
@@ -3982,6 +7364,33 @@ export const examples = [
   }
   
   return maxLength;
+}`,
+    javaCode: `public class Solution {
+    public static int maximizeConsecutiveNormalReadings(int[] readings, int K) {
+        int left = 0;
+        int maxLength = 0;
+        int zeroCount = 0;
+        
+        for (int right = 0; right < readings.length; right++) {
+            // 如果当前读数是异常的（0），增加零计数
+            if (readings[right] == 0) {
+                zeroCount++;
+            }
+            
+            // 如果零计数超过K，移动左指针
+            while (zeroCount > K) {
+                if (readings[left] == 0) {
+                    zeroCount--;
+                }
+                left++;
+            }
+            
+            // 更新最大长度
+            maxLength = Math.max(maxLength, right - left + 1);
+        }
+        
+        return maxLength;
+    }
 }`
   },
   {
@@ -4056,6 +7465,67 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> convertToPalindromicList(List<Integer> nums) {
+        // 检查是否已经是回文
+        if (isPalindrome(nums)) {
+            return new ArrayList<>(nums);
+        }
+        
+        // 尝试合并左边的连续元素
+        for (int i = 0; i < nums.size() - 1; i++) {
+            List<Integer> newNums = new ArrayList<>(nums);
+            newNums.set(i, newNums.get(i) + newNums.get(i + 1));
+            newNums.remove(i + 1);
+            if (isPalindrome(newNums)) {
+                return newNums;
+            }
+        }
+        
+        // 尝试合并右边的连续元素
+        for (int i = nums.size() - 1; i > 0; i--) {
+            List<Integer> newNums = new ArrayList<>(nums);
+            newNums.set(i, newNums.get(i) + newNums.get(i - 1));
+            newNums.remove(i - 1);
+            if (isPalindrome(newNums)) {
+                return newNums;
+            }
+        }
+        
+        // 如果无法通过一次合并得到回文，尝试递归
+        List<Integer> result = new ArrayList<>();
+        int maxLength = 0;
+        
+        for (int i = 0; i < nums.size() - 1; i++) {
+            List<Integer> newNums = new ArrayList<>(nums);
+            newNums.set(i, newNums.get(i) + newNums.get(i + 1));
+            newNums.remove(i + 1);
+            List<Integer> temp = convertToPalindromicList(newNums);
+            if (temp.size() > maxLength) {
+                maxLength = temp.size();
+                result = temp;
+            }
+        }
+        
+        return result;
+    }
+    
+    private static boolean isPalindrome(List<Integer> arr) {
+        int left = 0;
+        int right = arr.size() - 1;
+        while (left < right) {
+            if (!arr.get(left).equals(arr.get(right))) {
+                return false;
+            }
+            left++;
+            right--;
+        }
+        return true;
+    }
 }`
   },
   {
@@ -4084,6 +7554,19 @@ export const examples = [
   }
   
   return height;
+}`,
+    javaCode: `public class Solution {
+    public static int highestPyramid(int N) {
+        int height = 0;
+        int total = 0;
+        
+        while (total + (height + 1) * (height + 2) / 2 <= N) {
+            height++;
+            total += height * (height + 1) / 2;
+        }
+        
+        return height;
+    }
 }`
   },
   {
@@ -4141,6 +7624,47 @@ export const examples = [
   }
   
   return maxArea;
+}`,
+    javaCode: `public class Solution {
+    public static int largestHouseArea(int[][] grid) {
+        if (grid.length == 0 || grid[0].length == 0) {
+            return 0;
+        }
+        
+        int N = grid.length;
+        int M = grid[0].length;
+        boolean[][] visited = new boolean[N][M];
+        int maxArea = 0;
+        
+        // 深度优先搜索
+        for (int i = 0; i < N; i++) {
+            for (int j = 0; j < M; j++) {
+                if (visited[i][j] == false && grid[i][j] == 1) {
+                    int area = dfs(i, j, N, M, grid, visited);
+                    maxArea = Math.max(maxArea, area);
+                }
+            }
+        }
+        
+        return maxArea;
+    }
+    
+    private static int dfs(int i, int j, int N, int M, int[][] grid, boolean[][] visited) {
+        if (i < 0 || i >= N || j < 0 || j >= M || visited[i][j] || grid[i][j] == 0) {
+            return 0;
+        }
+        
+        visited[i][j] = true;
+        int area = 1;
+        
+        // 访问上下左右四个方向
+        area += dfs(i - 1, j, N, M, grid, visited); // 上
+        area += dfs(i + 1, j, N, M, grid, visited); // 下
+        area += dfs(i, j - 1, N, M, grid, visited); // 左
+        area += dfs(i, j + 1, N, M, grid, visited); // 右
+        
+        return area;
+    }
 }`
   },
   {
@@ -4191,6 +7715,46 @@ export const examples = [
   }
   
   return maxAttendance;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Solution {
+    public static int maximumCEOAttendance(int N, List<Integer> favorites) {
+        // 构建图
+        Map<Integer, Integer> graph = new HashMap<>();
+        for (int i = 0; i < N; i++) {
+            graph.put(i, favorites.get(i));
+        }
+        
+        boolean[] visited = new boolean[N];
+        int maxAttendance = 0;
+        
+        // 寻找环
+        for (int i = 0; i < N; i++) {
+            if (!visited[i]) {
+                List<Integer> path = new ArrayList<>();
+                int current = i;
+                
+                while (!visited[current]) {
+                    visited[current] = true;
+                    path.add(current);
+                    current = graph.get(current);
+                }
+                
+                // 检查是否形成环
+                int index = path.indexOf(current);
+                if (index != -1) {
+                    int cycle = path.size() - index;
+                    maxAttendance = Math.max(maxAttendance, cycle);
+                }
+            }
+        }
+        
+        return maxAttendance;
+    }
 }`
   },
   {
@@ -4251,6 +7815,55 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> firstMeatPizzaOrder(List<Integer> orders, int K) {
+        List<Integer> result = new ArrayList<>();
+        LinkedList<Integer> display = new LinkedList<>();
+        
+        // 初始化显示屏幕
+        for (int i = 0; i < Math.min(K, orders.size()); i++) {
+            display.add(orders.get(i));
+        }
+        
+        // 处理初始显示
+        Integer firstMeat = null;
+        for (int order : display) {
+            if (order < 0) {
+                firstMeat = order;
+                break;
+            }
+        }
+        if (firstMeat != null) {
+            result.add(firstMeat);
+        }
+        
+        // 处理后续订单
+        for (int i = K; i < orders.size(); i++) {
+            // 移除第一个订单
+            display.poll();
+            // 添加新订单
+            display.add(orders.get(i));
+            
+            // 寻找第一个肉类订单
+            firstMeat = null;
+            for (int order : display) {
+                if (order < 0) {
+                    firstMeat = order;
+                    break;
+                }
+            }
+            if (firstMeat != null) {
+                result.add(firstMeat);
+            }
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -4305,6 +7918,45 @@ export const examples = [
   }
   
   return totalScore;
+}`,
+    javaCode: `public class Solution {
+    public static int calculateGroupID(int[] PFR) {
+        int n = PFR.length;
+        int totalScore = 0;
+        
+        for (int i = 0; i < n; i++) {
+            boolean hasHigher = false;
+            boolean hasSmallerAfterHigher = false;
+            
+            // 检查后面是否有更高的PFR
+            for (int j = i + 1; j < n; j++) {
+                if (PFR[j] > PFR[i]) {
+                    hasHigher = true;
+                    // 检查这个更高的PFR后面是否有更小的PFR
+                    for (int k = j + 1; k < n; k++) {
+                        if (PFR[k] < PFR[j]) {
+                            hasSmallerAfterHigher = true;
+                            break;
+                        }
+                    }
+                    break;
+                }
+            }
+            
+            if (!hasHigher) {
+                // 后面没有更高的PFR，得15分
+                totalScore += 15;
+            } else if (hasSmallerAfterHigher) {
+                // 后面有更高的PFR，且那个更高的PFR后面有更小的PFR，得5分
+                totalScore += 5;
+            } else {
+                // 后面有更高的PFR，但那个更高的PFR后面没有更小的PFR，得10分
+                totalScore += 10;
+            }
+        }
+        
+        return totalScore;
+    }
 }`
   },
   {
@@ -4354,6 +8006,40 @@ export const examples = [
   }
   
   return maxPhones;
+}`,
+    javaCode: `public class Solution {
+    public static int maximumPhonesInGeneration(int[] tree) {
+        if (tree.length == 0) {
+            return 0;
+        }
+        
+        int maxPhones = 0;
+        int level = 0;
+        int currentLevelCount = 1;
+        int nextLevelCount = 0;
+        int currentLevelSum = 0;
+        
+        for (int i = 0; i < tree.length; i++) {
+            currentLevelSum += tree[i];
+            nextLevelCount += 2; // 每个节点有两个子节点
+            
+            currentLevelCount--;
+            if (currentLevelCount == 0) {
+                maxPhones = Math.max(maxPhones, currentLevelSum);
+                currentLevelCount = nextLevelCount;
+                nextLevelCount = 0;
+                currentLevelSum = 0;
+                level++;
+            }
+        }
+        
+        // 处理最后一层
+        if (currentLevelSum > 0) {
+            maxPhones = Math.max(maxPhones, currentLevelSum);
+        }
+        
+        return maxPhones;
+    }
 }`
   },
   {
@@ -4402,6 +8088,39 @@ export const examples = [
   }
   
   return maxPrefixLength > 0 ? minRotations : -1;
+}`,
+    javaCode: `public class Solution {
+    public static int minRotationsForLongestPrefix(String s1, String s2) {
+        if (s1.length() != s2.length()) {
+            return -1;
+        }
+        
+        int n = s1.length();
+        int maxPrefixLength = 0;
+        int minRotations = -1;
+        
+        // 尝试所有可能的旋转位置
+        for (int i = 0; i < n; i++) {
+            // 计算当前旋转后的字符串
+            String rotated = s2.substring(i) + s2.substring(0, i);
+            
+            // 计算公共前缀长度
+            int prefixLength = 0;
+            while (prefixLength < n && s1.charAt(prefixLength) == rotated.charAt(prefixLength)) {
+                prefixLength++;
+            }
+            
+            // 更新最大前缀长度和最小旋转次数
+            if (prefixLength > maxPrefixLength) {
+                maxPrefixLength = prefixLength;
+                minRotations = i;
+            } else if (prefixLength == maxPrefixLength && i < minRotations) {
+                minRotations = i;
+            }
+        }
+        
+        return maxPrefixLength > 0 ? minRotations : -1;
+    }
 }`
   },
   {
@@ -4459,6 +8178,61 @@ export const examples = [
   }
   
   return result;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Queue;
+
+public class Solution {
+    public static int[][] minimumDistanceToServer(int[][] grid) {
+        if (grid.length == 0 || grid[0].length == 0) {
+            return new int[][]{};
+        }
+        
+        int M = grid.length;
+        int N = grid[0].length;
+        int[][] result = new int[M][N];
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                result[i][j] = -1;
+            }
+        }
+        
+        Queue<int[]> queue = new LinkedList<>();
+        
+        // 初始化队列，将所有服务器位置加入队列
+        for (int i = 0; i < M; i++) {
+            for (int j = 0; j < N; j++) {
+                if (grid[i][j] == 1) {
+                    result[i][j] = 0;
+                    queue.add(new int[]{i, j});
+                }
+            }
+        }
+        
+        // 四个方向
+        int[][] directions = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+        
+        // BFS
+        while (!queue.isEmpty()) {
+            int[] current = queue.poll();
+            int x = current[0];
+            int y = current[1];
+            
+            for (int[] dir : directions) {
+                int nx = x + dir[0];
+                int ny = y + dir[1];
+                
+                if (nx >= 0 && nx < M && ny >= 0 && ny < N && result[nx][ny] == -1) {
+                    result[nx][ny] = result[x][y] + 1;
+                    queue.add(new int[]{nx, ny});
+                }
+            }
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -4506,6 +8280,38 @@ export const examples = [
   }
   
   return minTime === Infinity ? -1 : minTime;
+}`,
+    javaCode: `public class Solution {
+    public static int minimumTimeToDeliver(int order, int money, int oldMachineTime, int oldMachineCost, int newMachineTime, int newMachineCost, int shopPrice) {
+        int minTime = Integer.MAX_VALUE;
+        
+        // 选项1：只使用旧机器
+        int maxOldBoxes = money / oldMachineCost;
+        int oldBoxes = Math.min(maxOldBoxes, order);
+        int oldTime = oldBoxes * oldMachineTime + (order - oldBoxes) * shopPrice;
+        if (oldBoxes * oldMachineCost + (order - oldBoxes) * shopPrice <= money) {
+            minTime = Math.min(minTime, oldTime);
+        }
+        
+        // 选项2：购买新机器
+        if (newMachineCost <= money) {
+            int remainingMoney = money - newMachineCost;
+            int maxNewBoxes = remainingMoney / oldMachineCost;
+            int newBoxes = Math.min(maxNewBoxes, order);
+            int newTime = newBoxes * newMachineTime + (order - newBoxes) * shopPrice;
+            if (newMachineCost + newBoxes * oldMachineCost + (order - newBoxes) * shopPrice <= money) {
+                minTime = Math.min(minTime, newTime);
+            }
+        }
+        
+        // 选项3：只从商店购买
+        int shopCost = order * shopPrice;
+        if (shopCost <= money) {
+            minTime = Math.min(minTime, order * shopPrice);
+        }
+        
+        return minTime == Integer.MAX_VALUE ? -1 : minTime;
+    }
 }`
   },
   {
@@ -4559,6 +8365,46 @@ export const examples = [
   }
   
   return stops;
+}`,
+    javaCode: `import java.util.List;
+
+public class Solution {
+    public static int minimumGasStations(int D, int N, List<List<Integer>> stations) {
+        // 添加终点作为最后一个加油站
+        stations.add(List.of(D, 0));
+        
+        int currentFuel = 0;
+        int stops = 0;
+        int maxReach = 0;
+        int i = 0;
+        
+        while (i <= N) {
+            // 找到当前燃料可以到达的最远加油站
+            while (i <= N && stations.get(i).get(0) <= maxReach) {
+                // 更新当前可以获得的最大燃料
+                if (stations.get(i).get(0) <= maxReach) {
+                    currentFuel = Math.max(currentFuel, maxReach - stations.get(i).get(0) + stations.get(i).get(1));
+                }
+                i++;
+            }
+            
+            // 无法到达下一个加油站
+            if (i <= N && stations.get(i).get(0) > maxReach && currentFuel <= maxReach) {
+                return -1;
+            }
+            
+            // 到达终点
+            if (i > N) {
+                return stops;
+            }
+            
+            // 加油
+            stops++;
+            maxReach = currentFuel;
+        }
+        
+        return stops;
+    }
 }`
   },
   {
@@ -4621,6 +8467,53 @@ export const examples = [
   }
   
   return minCost;
+}`,
+    javaCode: `public class Solution {
+    public static int minimumCostOfApples(int N, int[] shopA, int[] shopB) {
+        int aCount = shopA[0], aPrice = shopA[1];
+        int bCount = shopB[0], bPrice = shopB[1];
+        int minCost = Integer.MAX_VALUE;
+        
+        // 尝试所有可能的A商店的批数
+        for (int aLots = 0; aLots <= Math.ceil((double) N / aCount); aLots++) {
+            int aApples = aLots * aCount;
+            if (aApples >= N) {
+                int cost = aLots * aPrice;
+                if (cost < minCost) {
+                    minCost = cost;
+                }
+            } else {
+                // 需要从B商店购买剩余的苹果
+                int remaining = N - aApples;
+                int bLots = (int) Math.ceil((double) remaining / bCount);
+                int cost = aLots * aPrice + bLots * bPrice;
+                if (cost < minCost) {
+                    minCost = cost;
+                }
+            }
+        }
+        
+        // 尝试所有可能的B商店的批数
+        for (int bLots = 0; bLots <= Math.ceil((double) N / bCount); bLots++) {
+            int bApples = bLots * bCount;
+            if (bApples >= N) {
+                int cost = bLots * bPrice;
+                if (cost < minCost) {
+                    minCost = cost;
+                }
+            } else {
+                // 需要从A商店购买剩余的苹果
+                int remaining = N - bApples;
+                int aLots = (int) Math.ceil((double) remaining / aCount);
+                int cost = bLots * bPrice + aLots * aPrice;
+                if (cost < minCost) {
+                    minCost = cost;
+                }
+            }
+        }
+        
+        return minCost;
+    }
 }`
   },
   {
@@ -4670,6 +8563,48 @@ export const examples = [
   }
   
   return Math.min(...dp[maskSize - 1]);
+}`,
+    javaCode: `import java.util.List;
+
+public class Solution {
+    public static double shortestPathForSalesperson(int N, int K, List<List<Integer>> retailers) {
+        double[][] distances = new double[N + 1][N + 1];
+        for (int i = 0; i <= N; i++) {
+            for (int j = 0; j <= N; j++) {
+                double x1 = retailers.get(i).get(0);
+                double y1 = retailers.get(i).get(1);
+                double x2 = retailers.get(j).get(0);
+                double y2 = retailers.get(j).get(1);
+                distances[i][j] = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            }
+        }
+        
+        int maskSize = 1 << (N + 1);
+        double[][] dp = new double[maskSize][N + 1];
+        for (double[] row : dp) {
+            java.util.Arrays.fill(row, Double.MAX_VALUE);
+        }
+        dp[1 << K][K] = 0;
+        
+        for (int mask = 0; mask < maskSize; mask++) {
+            for (int i = 0; i <= N; i++) {
+                if (dp[mask][i] != Double.MAX_VALUE) {
+                    for (int j = 0; j <= N; j++) {
+                        if ((mask & (1 << j)) == 0) {
+                            int newMask = mask | (1 << j);
+                            dp[newMask][j] = Math.min(dp[newMask][j], dp[mask][i] + distances[i][j]);
+                        }
+                    }
+                }
+            }
+        }
+        
+        double minDist = Double.MAX_VALUE;
+        for (double d : dp[maskSize - 1]) {
+            minDist = Math.min(minDist, d);
+        }
+        return minDist;
+    }
 }`
   },
   {
@@ -4727,6 +8662,48 @@ export const examples = [
   }
   
   return count;
+}`,
+    javaCode: `public class Solution {
+    public static int numberOfSubmatrices(int[][] matrix, int K) {
+        if (matrix.length == 0 || matrix[0].length == 0) {
+            return 0;
+        }
+        
+        int N = matrix.length;
+        int M = matrix[0].length;
+        int count = 0;
+        
+        for (int i = 0; i < N; i++) {
+            int product = 1;
+            for (int j = 0; j < M; j++) {
+                // 计算从(0,0)到(i,j)的子矩阵的乘积
+                if (i == 0) {
+                    // 第一行
+                    if (j == 0) {
+                        product = matrix[i][j];
+                    } else {
+                        product *= matrix[i][j];
+                    }
+                } else {
+                    // 其他行，需要重新计算
+                    product = 1;
+                    for (int x = 0; x <= i; x++) {
+                        for (int y = 0; y <= j; y++) {
+                            product *= matrix[x][y];
+                        }
+                    }
+                }
+                
+                if (product <= K) {
+                    count++;
+                } else {
+                    break; // 后面的子矩阵乘积会更大，直接 break
+                }
+            }
+        }
+        
+        return count;
+    }
 }`
   },
   {
@@ -4771,6 +8748,46 @@ export const examples = [
   
   return slopes.size;
 }`
+,
+    javaCode: `import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class Solution {
+    public static int numberOfUniqueLines(List<Integer> timHouse, List<List<Integer>> friends) {
+        int tx = timHouse.get(0);
+        int ty = timHouse.get(1);
+        Set<String> slopes = new HashSet<>();
+        
+        for (List<Integer> friend : friends) {
+            int fx = friend.get(0);
+            int fy = friend.get(1);
+            
+            // 计算斜率
+            String slope;
+            if (fx == tx) {
+                slope = "vertical"; // 垂直直线
+            } else if (fy == ty) {
+                slope = "horizontal"; // 水平直线
+            } else {
+                // 计算斜率的最简形式
+                int dx = fx - tx;
+                int dy = fy - ty;
+                int gcd = gcd(Math.abs(dx), Math.abs(dy));
+                int sign = (dx * dy) < 0 ? -1 : 1;
+                slope = sign * (Math.abs(dy) / gcd) + "/" + (Math.abs(dx) / gcd);
+            }
+            
+            slopes.add(slope);
+        }
+        
+        return slopes.size();
+    }
+    
+    private static int gcd(int a, int b) {
+        return b == 0 ? a : gcd(b, a % b);
+    }
+}`,
   },
   {
     id: 'example-97',
@@ -4794,6 +8811,17 @@ export const examples = [
     }
   }
   return count;
+}`,
+    javaCode: `public class Solution {
+    public static int countElementsLessThanK(int[] arr, int K) {
+        int count = 0;
+        for (int num : arr) {
+            if (num < K) {
+                count++;
+            }
+        }
+        return count;
+    }
 }`
   },
   {
@@ -4816,6 +8844,15 @@ export const examples = [
     result[arr[i]] = i;
   }
   return result;
+}`,
+    javaCode: `public class Solution {
+    public static int[] replaceElementsWithIndices(int[] arr) {
+        int[] result = new int[arr.length];
+        for (int i = 0; i < arr.length; i++) {
+            result[arr[i]] = i;
+        }
+        return result;
+    }
 }`
   },
   {
@@ -4842,6 +8879,19 @@ export const examples = [
     }
   }
   return count;
+}`,
+    javaCode: `public class Solution {
+    public static int countDigitOccurrences(int needle, int haystack) {
+        String haystackStr = String.valueOf(haystack);
+        String needleStr = String.valueOf(needle);
+        int count = 0;
+        for (char c : haystackStr.toCharArray()) {
+            if (String.valueOf(c).equals(needleStr)) {
+                count++;
+            }
+        }
+        return count;
+    }
 }`
   },
   {
@@ -4894,6 +8944,41 @@ export const examples = [
   // 计算最小步骤数
   // 每次操作可以处理两个不同的字符，所以步骤数等于不同字符的数量除以2
   return Math.floor(diffIndices.length / 2);
+}`,
+    javaCode: `public class Solution {
+    public static int minimumStepsToConvert(String str1, String str2) {
+        // 如果两个字符串长度不同，直接返回-1
+        if (str1.length() != str2.length()) {
+            return -1;
+        }
+        
+        // 如果两个字符串已经相同，返回0
+        if (str1.equals(str2)) {
+            return 0;
+        }
+        
+        // 计算不同字符的位置
+        int count = 0;
+        for (int i = 0; i < str1.length(); i++) {
+            if (str1.charAt(i) != str2.charAt(i)) {
+                count++;
+            }
+        }
+        
+        // 如果不同字符的数量为0，返回0
+        if (count == 0) {
+            return 0;
+        }
+        
+        // 如果不同字符的数量为奇数，返回-1（因为每次操作都会改变偶数个字符的位置）
+        if (count % 2 != 0) {
+            return -1;
+        }
+        
+        // 计算最小步骤数
+        // 每次操作可以处理两个不同的字符，所以步骤数等于不同字符的数量除以2
+        return count / 2;
+    }
 }`
   },
   {
@@ -4928,6 +9013,30 @@ export const examples = [
   }
   
   return count;
+}`,
+    javaCode: `import java.util.HashMap;
+import java.util.Map;
+
+public class Solution {
+    public static int countLuckyCustomers(int[] prices, int K) {
+        Map<Integer, Integer> priceMap = new HashMap<>();
+        int count = 0;
+        
+        // 统计每个价格出现的次数
+        for (int price : prices) {
+            priceMap.put(price, priceMap.getOrDefault(price, 0) + 1);
+        }
+        
+        // 计算满足条件的产品对数量
+        for (int price : priceMap.keySet()) {
+            int target = price + K;
+            if (priceMap.containsKey(target)) {
+                count += priceMap.get(price) * priceMap.get(target);
+            }
+        }
+        
+        return count;
+    }
 }`
   },
   {
@@ -4964,6 +9073,42 @@ export const examples = [
   }
   
   return count;
+}`,
+    javaCode: `import java.util.HashSet;
+import java.util.Set;
+
+public class Solution {
+    public static int countNonCommonElements(int[] list1, int[] list2) {
+        Set<Integer> set1 = new HashSet<>();
+        Set<Integer> set2 = new HashSet<>();
+        int count = 0;
+        
+        // 将list1中的元素添加到set1
+        for (int num : list1) {
+            set1.add(num);
+        }
+        
+        // 将list2中的元素添加到set2
+        for (int num : list2) {
+            set2.add(num);
+        }
+        
+        // 统计list1中不在list2中的元素
+        for (int num : set1) {
+            if (!set2.contains(num)) {
+                count++;
+            }
+        }
+        
+        // 统计list2中不在list1中的元素
+        for (int num : set2) {
+            if (!set1.contains(num)) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
 }`
   },
   {
@@ -5006,6 +9151,39 @@ export const examples = [
   }
   
   return maxAttendance;
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static int maximumAlumniAttendance(int[] likes) {
+        int n = likes.length;
+        boolean[] visited = new boolean[n];
+        int maxAttendance = 0;
+        
+        for (int i = 0; i < n; i++) {
+            if (!visited[i]) {
+                List<Integer> cycle = new ArrayList<>();
+                int current = i;
+                
+                while (!visited[current]) {
+                    visited[current] = true;
+                    cycle.add(current);
+                    current = likes[current] - 1; // 转换为0-based索引
+                }
+                
+                // 检查是否形成环
+                int cycleStartIndex = cycle.indexOf(current);
+                if (cycleStartIndex != -1) {
+                    int cycleLength = cycle.size() - cycleStartIndex;
+                    maxAttendance = Math.max(maxAttendance, cycleLength);
+                }
+            }
+        }
+        
+        return maxAttendance;
+    }
 }`
   },
   {
@@ -5038,6 +9216,26 @@ export const examples = [
   }
   
   return part2;
+}
+`,
+    javaCode: `public class Solution {
+    public static long encryptSecretCode(long secretCode, long firstKey, long secondKey) {
+        final long MOD = 1000000007;
+        
+        // 计算(S^N) % 10
+        long part1 = 1;
+        for (long i = 0; i < firstKey; i++) {
+            part1 = (part1 * secretCode) % 10;
+        }
+        
+        // 计算(part1^M) % MOD
+        long part2 = 1;
+        for (long i = 0; i < secondKey; i++) {
+            part2 = (part2 * part1) % MOD;
+        }
+        
+        return part2;
+    }
 }`
   },
   {
@@ -5101,6 +9299,62 @@ export const examples = [
   }
   
   return results;
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Collections;
+
+public class Solution {
+    public static List<Long> organizationReputation(int n, int[] efficiencies, int[] teamIDs, int Q, List<List<Integer>> days) {
+        // 初始化团队信息
+        Map<Integer, List<Integer>> teams = new HashMap<>();
+        long totalReputation = 0;
+        
+        // 按团队分组，存储每个团队的效率列表
+        for (int i = 0; i < n; i++) {
+            int teamId = teamIDs[i];
+            if (!teams.containsKey(teamId)) {
+                teams.put(teamId, new ArrayList<>());
+            }
+            teams.get(teamId).add(efficiencies[i]);
+            totalReputation += efficiencies[i];
+        }
+        
+        // 对每个团队的效率进行排序，方便快速获取最低效率
+        for (List<Integer> team : teams.values()) {
+            Collections.sort(team);
+        }
+        
+        List<Long> results = new ArrayList<>();
+        
+        for (List<Integer> day : days) {
+            int empId = day.get(0);
+            int K = day.get(1);
+            int employeeIndex = empId - 1; // 转换为0-based索引
+            int teamId = teamIDs[employeeIndex];
+            List<Integer> team = teams.get(teamId);
+            
+            // 移除被解雇的员工
+            int firedEfficiency = efficiencies[employeeIndex];
+            totalReputation -= firedEfficiency;
+            
+            // 从团队中移除该员工的效率
+            team.remove(Integer.valueOf(firedEfficiency));
+            
+            // 移除K个效率最低的同事
+            for (int i = 0; i < K && !team.isEmpty(); i++) {
+                int lowestEfficiency = team.remove(0);
+                totalReputation -= lowestEfficiency;
+            }
+            
+            results.add(totalReputation);
+        }
+        
+        return results;
+    }
 }`
   },
   {
@@ -5165,6 +9419,87 @@ export const examples = [
   
   // 计算平均等待时间
   return totalWaitingTime / n;
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.PriorityQueue;
+
+public class Solution {
+    public static double calculateAverageWaitingTime(List<Integer> requestTimes, List<Integer> durations) {
+        int n = requestTimes.size();
+        List<Task> tasks = new ArrayList<>();
+        
+        for (int i = 0; i < n; i++) {
+            tasks.add(new Task(requestTimes.get(i), durations.get(i), i));
+        }
+        
+        // 按请求时间排序
+        tasks.sort(Comparator.comparingInt(Task::getRequestTime));
+        
+        // 使用优先队列，按照持续时间排序，持续时间相同则按请求时间排序
+        PriorityQueue<Task> minHeap = new PriorityQueue<>((a, b) -> {
+            if (a.getDuration() != b.getDuration()) {
+                return a.getDuration() - b.getDuration();
+            }
+            return a.getRequestTime() - b.getRequestTime();
+        });
+        
+        int currentTime = 0;
+        long totalWaitingTime = 0;
+        int taskIndex = 0;
+        
+        while (taskIndex < n || !minHeap.isEmpty()) {
+            // 将所有到达时间小于等于当前时间的任务加入堆
+            while (taskIndex < n && tasks.get(taskIndex).getRequestTime() <= currentTime) {
+                minHeap.add(tasks.get(taskIndex));
+                taskIndex++;
+            }
+            
+            if (!minHeap.isEmpty()) {
+                // 取出持续时间最短的任务
+                Task currentTask = minHeap.poll();
+                // 计算等待时间
+                int waitingTime = currentTime - currentTask.getRequestTime();
+                totalWaitingTime += waitingTime;
+                // 更新当前时间
+                currentTime += currentTask.getDuration();
+            } else {
+                // 没有任务可执行，直接跳到下一个任务的到达时间
+                if (taskIndex < n) {
+                    currentTime = tasks.get(taskIndex).getRequestTime();
+                }
+            }
+        }
+        
+        // 计算平均等待时间
+        return (double) totalWaitingTime / n;
+    }
+    
+    static class Task {
+        private int requestTime;
+        private int duration;
+        private int index;
+        
+        public Task(int requestTime, int duration, int index) {
+            this.requestTime = requestTime;
+            this.duration = duration;
+            this.index = index;
+        }
+        
+        public int getRequestTime() {
+            return requestTime;
+        }
+        
+        public int getDuration() {
+            return duration;
+        }
+        
+        public int getIndex() {
+            return index;
+        }
+    }
 }`
   },
   {
@@ -5190,6 +9525,22 @@ export const examples = [
   }
   
   return totalDistance;
+}
+`,
+    javaCode: `import java.util.List;
+
+public class Solution {
+    public static int calculateBusDistance(int num, int constM, List<List<Integer>> busRoutes) {
+        int totalDistance = 0;
+        
+        for (List<Integer> route : busRoutes) {
+            int start = route.get(0);
+            int end = route.get(1);
+            totalDistance += end - start;
+        }
+        
+        return totalDistance;
+    }
 }`
   },
   {
@@ -5245,6 +9596,54 @@ export const examples = [
   }
   
   return [maxF, bestV2];
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> maxCommonFootsteps(int fatherPos, int martinPos, int velFather, int steps) {
+        // 计算父亲的所有脚印位置
+        List<Integer> fatherSteps = new ArrayList<>();
+        for (int i = 0; i <= steps; i++) {
+            fatherSteps.add(fatherPos + i * velFather);
+        }
+        
+        // 计算Martin需要覆盖的距离
+        int distance = fatherSteps.get(fatherSteps.size() - 1) - martinPos;
+        
+        int maxF = 0;
+        int bestV2 = 0;
+        
+        // 遍历可能的V2值
+        // 由于Martin的第一步必须踩中父亲的脚印，所以V2必须满足：martinPos + k*V2 = fatherSteps[j] 对于某个k和j
+        // 我们可以从最大的可能V2开始遍历，这样一旦找到最大的F，就可以直接返回
+        
+        // 最大的可能V2是distance（一步到达）
+        for (int V2 = distance; V2 >= 1; V2--) {
+            int currentPos = martinPos;
+            int f = 0;
+            
+            // 检查每一步是否踩中父亲的脚印
+            while (currentPos <= fatherSteps.get(fatherSteps.size() - 1)) {
+                if (fatherSteps.contains(currentPos)) {
+                    f++;
+                }
+                currentPos += V2;
+            }
+            
+            if (f > maxF) {
+                maxF = f;
+                bestV2 = V2;
+            } else if (f == maxF && V2 > bestV2) {
+                bestV2 = V2;
+            }
+        }
+        
+        List<Integer> result = new ArrayList<>();
+        result.add(maxF);
+        result.add(bestV2);
+        return result;
+    }
 }`
   },
   {
@@ -5272,6 +9671,25 @@ export const examples = [
   }
   
   return result;
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> alternateSort(int[] arr) {
+        // 对数组进行升序排序
+        Arrays.sort(arr);
+        
+        // 取交替元素（从第一个位置开始）
+        List<Integer> result = new ArrayList<>();
+        for (int i = 0; i < arr.length; i += 2) {
+            result.add(arr[i]);
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -5303,6 +9721,28 @@ export const examples = [
   }
   
   return misses;
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static int calculateCacheMisses(List<Integer> pageRequests, int maxCacheSize) {
+        List<Integer> cache = new ArrayList<>();
+        int misses = 0;
+        
+        for (int page : pageRequests) {
+            if (!cache.contains(page)) {
+                misses++;
+                if (cache.size() >= maxCacheSize) {
+                    cache.remove(0); // 移除最早进入缓存的页面
+                }
+                cache.add(page);
+            }
+        }
+        
+        return misses;
+    }
 }`
   },
   {
@@ -5326,6 +9766,38 @@ export const examples = [
   const remaining = arr.slice(K).sort((a, b) => b - a);
   // 合并两个部分
   return [...firstK, ...remaining];
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> mixedSort(int[] arr, int K) {
+        List<Integer> result = new ArrayList<>();
+        
+        // 对前K个元素进行升序排序
+        int[] firstK = Arrays.copyOfRange(arr, 0, K);
+        Arrays.sort(firstK);
+        
+        // 对剩余元素进行降序排序
+        Integer[] remaining = new Integer[arr.length - K];
+        for (int i = K; i < arr.length; i++) {
+            remaining[i - K] = arr[i];
+        }
+        Arrays.sort(remaining, Collections.reverseOrder());
+        
+        // 合并两个部分
+        for (int num : firstK) {
+            result.add(num);
+        }
+        for (int num : remaining) {
+            result.add(num);
+        }
+        
+        return result;
+    }
 }`
   },
   {
@@ -5376,6 +9848,50 @@ export const examples = [
   }
   
   return state;
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> streetLightsAfterMDays(List<Integer> currentState, int days) {
+        List<Integer> state = new ArrayList<>(currentState);
+        int n = state.size();
+        
+        for (int day = 0; day < days; day++) {
+            List<Integer> newState = new ArrayList<>(n);
+            for (int i = 0; i < n; i++) {
+                newState.add(0);
+            }
+            
+            for (int i = 0; i < n; i++) {
+                int left, right;
+                
+                // 处理两端的路灯
+                if (i == 0) {
+                    left = 0; // 假设左边始终关闭
+                    right = state.get(i + 1);
+                } else if (i == n - 1) {
+                    left = state.get(i - 1);
+                    right = 0; // 假设右边始终关闭
+                } else {
+                    left = state.get(i - 1);
+                    right = state.get(i + 1);
+                }
+                
+                // 根据规则计算新状态
+                if (left == right) {
+                    newState.set(i, 0);
+                } else {
+                    newState.set(i, 1);
+                }
+            }
+            
+            state = newState;
+        }
+        
+        return state;
+    }
 }`
   },
   {
@@ -5440,6 +9956,88 @@ export const examples = [
   
   // 计算平均等待时间并保留两位小数
   return (totalWaitingTime / n).toFixed(2);
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.PriorityQueue;
+
+public class Solution {
+    public static String calculateAverageWaitingTimeSJF(List<Integer> requestTimes, List<Integer> durations) {
+        int n = requestTimes.size();
+        List<Task> tasks = new ArrayList<>();
+        
+        for (int i = 0; i < n; i++) {
+            tasks.add(new Task(requestTimes.get(i), durations.get(i), i));
+        }
+        
+        // 按请求时间排序
+        tasks.sort(Comparator.comparingInt(Task::getRequestTime));
+        
+        // 使用优先队列，按照持续时间排序，持续时间相同则按请求时间排序
+        PriorityQueue<Task> minHeap = new PriorityQueue<>((a, b) -> {
+            if (a.getDuration() != b.getDuration()) {
+                return a.getDuration() - b.getDuration();
+            }
+            return a.getRequestTime() - b.getRequestTime();
+        });
+        
+        int currentTime = 0;
+        long totalWaitingTime = 0;
+        int taskIndex = 0;
+        
+        while (taskIndex < n || !minHeap.isEmpty()) {
+            // 将所有到达时间小于等于当前时间的任务加入堆
+            while (taskIndex < n && tasks.get(taskIndex).getRequestTime() <= currentTime) {
+                minHeap.add(tasks.get(taskIndex));
+                taskIndex++;
+            }
+            
+            if (!minHeap.isEmpty()) {
+                // 取出持续时间最短的任务
+                Task currentTask = minHeap.poll();
+                // 计算等待时间
+                int waitingTime = currentTime - currentTask.getRequestTime();
+                totalWaitingTime += waitingTime;
+                // 更新当前时间
+                currentTime += currentTask.getDuration();
+            } else {
+                // 没有任务可执行，直接跳到下一个任务的到达时间
+                if (taskIndex < n) {
+                    currentTime = tasks.get(taskIndex).getRequestTime();
+                }
+            }
+        }
+        
+        // 计算平均等待时间并保留两位小数
+        double averageWaitingTime = (double) totalWaitingTime / n;
+        return String.format("%.2f", averageWaitingTime);
+    }
+    
+    static class Task {
+        private int requestTime;
+        private int duration;
+        private int index;
+        
+        public Task(int requestTime, int duration, int index) {
+            this.requestTime = requestTime;
+            this.duration = duration;
+            this.index = index;
+        }
+        
+        public int getRequestTime() {
+            return requestTime;
+        }
+        
+        public int getDuration() {
+            return duration;
+        }
+        
+        public int getIndex() {
+            return index;
+        }
+    }
 }`
   },
   {
@@ -5474,6 +10072,28 @@ export const examples = [
   }
   
   return -1;
+}
+`,
+    javaCode: `public class Solution {
+    public static int isRightRotation(String word1, String word2) {
+        // 如果长度不同，直接返回-1
+        if (word1.length() != word2.length()) {
+            return -1;
+        }
+        
+        // 如果两个单词相同，返回1
+        if (word1.equals(word2)) {
+            return 1;
+        }
+        
+        // 检查word2是否是word1+word1的子串
+        String doubledWord = word1 + word1;
+        if (doubledWord.contains(word2)) {
+            return 1;
+        }
+        
+        return -1;
+    }
 }`
   },
   {
@@ -5519,6 +10139,49 @@ export const examples = [
   });
   
   return arr;
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+public class Solution {
+    public static List<Integer> frequencySort(List<Integer> arr) {
+        // 统计每个元素的频率
+        Map<Integer, Integer> frequencyMap = new HashMap<>();
+        for (int num : arr) {
+            frequencyMap.put(num, frequencyMap.getOrDefault(num, 0) + 1);
+        }
+        
+        // 按频率降序排序，频率相同则按原顺序排序
+        // 为了保持原顺序，我们需要记录每个元素第一次出现的位置
+        Map<Integer, Integer> firstOccurrence = new HashMap<>();
+        for (int i = 0; i < arr.size(); i++) {
+            int num = arr.get(i);
+            if (!firstOccurrence.containsKey(num)) {
+                firstOccurrence.put(num, i);
+            }
+        }
+        
+        // 排序
+        arr.sort(new Comparator<Integer>() {
+            @Override
+            public int compare(Integer a, Integer b) {
+                int freqA = frequencyMap.get(a);
+                int freqB = frequencyMap.get(b);
+                
+                if (freqA != freqB) {
+                    return freqB - freqA; // 频率高的排前面
+                } else {
+                    return firstOccurrence.get(a) - firstOccurrence.get(b); // 频率相同按原顺序
+                }
+            }
+        });
+        
+        return arr;
+    }
 }`
   },
   {
@@ -5577,6 +10240,64 @@ export const examples = [
   
   dfs(1, -1);
   return maxProduct;
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
+public class Solution {
+    private static long maxProduct;
+    
+    public static long maxLeafToLeafPathProduct(int n, List<Integer> values, List<List<Integer>> edges) {
+        // 构建树的邻接表
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i <= n; i++) {
+            adj.add(new ArrayList<>());
+        }
+        for (List<Integer> edge : edges) {
+            int a = edge.get(0);
+            int b = edge.get(1);
+            adj.get(a).add(b);
+            adj.get(b).add(a);
+        }
+        
+        maxProduct = Long.MIN_VALUE;
+        
+        // 深度优先搜索
+        dfs(1, -1, values, adj);
+        
+        return maxProduct;
+    }
+    
+    private static long dfs(int node, int parent, List<Integer> values, List<List<Integer>> adj) {
+        // 收集所有子节点的路径乘积
+        List<Long> childProducts = new ArrayList<>();
+        
+        for (int neighbor : adj.get(node)) {
+            if (neighbor != parent) {
+                long product = dfs(neighbor, node, values, adj);
+                childProducts.add(product);
+            }
+        }
+        
+        // 如果是叶子节点（只有一个邻居，即父节点）
+        if (childProducts.isEmpty()) {
+            return values.get(node - 1); // 返回自身的值
+        }
+        
+        // 排序子节点的路径乘积
+        Collections.sort(childProducts, Collections.reverseOrder());
+        
+        // 如果有至少两个子节点，计算通过当前节点的最大路径乘积
+        if (childProducts.size() >= 2) {
+            long currentProduct = (long) values.get(node - 1) * childProducts.get(0) * childProducts.get(1);
+            maxProduct = Math.max(maxProduct, currentProduct);
+        }
+        
+        // 返回当前节点到叶子节点的最大路径乘积
+        return (long) values.get(node - 1) * childProducts.get(0);
+    }
 }`
   },
   {
@@ -5643,6 +10364,80 @@ export const examples = [
   }
   
   return -1;
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+public class Solution {
+    public static int minimumJuiceStalls(int N, List<Integer> dist, List<Integer> lit, int D, int K) {
+        // 将果汁摊位按距离排序
+        List<Stall> stalls = new ArrayList<>();
+        for (int i = 0; i < N; i++) {
+            stalls.add(new Stall(dist.get(i), lit.get(i)));
+        }
+        stalls.sort(Comparator.comparingInt(Stall::getDist));
+        
+        // 添加学校作为最后一个点
+        stalls.add(new Stall(D, 0));
+        
+        int currentEnergy = K;
+        int currentPosition = 0;
+        int stops = 0;
+        int bestStall = -1;
+        
+        for (int i = 0; i < stalls.size(); i++) {
+            int distanceToStall = stalls.get(i).getDist() - currentPosition;
+            
+            // 如果当前能量不足以到达下一个摊位
+            while (currentEnergy < distanceToStall) {
+                if (bestStall == -1) {
+                    return -1; // 无法到达
+                }
+                // 选择最优的摊位补充能量
+                currentEnergy += stalls.get(bestStall).getLit();
+                stops++;
+                bestStall = -1;
+            }
+            
+            // 到达当前摊位
+            currentEnergy -= distanceToStall;
+            currentPosition = stalls.get(i).getDist();
+            
+            // 如果是学校，结束
+            if (currentPosition == D) {
+                return stops;
+            }
+            
+            // 更新最优摊位（在可到达范围内，选择果汁最多的摊位）
+            if (stalls.get(i).getLit() > 0 && currentPosition + currentEnergy >= stalls.get(i).getDist()) {
+                if (bestStall == -1 || stalls.get(i).getLit() > stalls.get(bestStall).getLit()) {
+                    bestStall = i;
+                }
+            }
+        }
+        
+        return -1;
+    }
+    
+    static class Stall {
+        private int dist;
+        private int lit;
+        
+        public Stall(int dist, int lit) {
+            this.dist = dist;
+            this.lit = lit;
+        }
+        
+        public int getDist() {
+            return dist;
+        }
+        
+        public int getLit() {
+            return lit;
+        }
+    }
 }`
   },
   {
@@ -5703,6 +10498,54 @@ export const examples = [
   }
   
   return minCost;
+}
+`,
+    javaCode: `public class Solution {
+    public static int minimumAppleCost(int N, int M1, int P1, int M2, int P2) {
+        int minCost = Integer.MAX_VALUE;
+        
+        // 计算在商店A购买0到N/M1+1批的情况
+        for (int x = 0; x <= Math.ceil((double) N / M1); x++) {
+            int applesFromA = x * M1;
+            if (applesFromA >= N) {
+                // 只从A购买
+                int cost = x * P1;
+                if (cost < minCost) {
+                    minCost = cost;
+                }
+            } else {
+                // 需要从B购买剩余的苹果
+                int remainingApples = N - applesFromA;
+                int y = (int) Math.ceil((double) remainingApples / M2);
+                int cost = x * P1 + y * P2;
+                if (cost < minCost) {
+                    minCost = cost;
+                }
+            }
+        }
+        
+        // 计算在商店B购买0到N/M2+1批的情况
+        for (int y = 0; y <= Math.ceil((double) N / M2); y++) {
+            int applesFromB = y * M2;
+            if (applesFromB >= N) {
+                // 只从B购买
+                int cost = y * P2;
+                if (cost < minCost) {
+                    minCost = cost;
+                }
+            } else {
+                // 需要从A购买剩余的苹果
+                int remainingApples = N - applesFromB;
+                int x = (int) Math.ceil((double) remainingApples / M1);
+                int cost = x * P1 + y * P2;
+                if (cost < minCost) {
+                    minCost = cost;
+                }
+            }
+        }
+        
+        return minCost;
+    }
 }`
   },
   {
@@ -5747,6 +10590,62 @@ export const examples = [
   
   // 按升序返回房屋编号
   return [Math.min(house1, house2), Math.max(house1, house2)];
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> largestPossibleHousePlot(int N, List<House> houses) {
+        // 按位置排序房屋
+        houses.sort(Comparator.comparingInt(House::getPosition));
+        
+        int maxDistance = -1;
+        int house1 = -1;
+        int house2 = -1;
+        
+        // 计算相邻房屋之间的距离
+        for (int i = 1; i < N; i++) {
+            int distance = houses.get(i).getPosition() - houses.get(i-1).getPosition();
+            if (distance > maxDistance) {
+                maxDistance = distance;
+                house1 = houses.get(i-1).getNumber();
+                house2 = houses.get(i).getNumber();
+            } else if (distance == maxDistance) {
+                // 如果距离相同，选择编号较小的房屋对
+                int currentMin = Math.min(house1, house2);
+                int newMin = Math.min(houses.get(i-1).getNumber(), houses.get(i).getNumber());
+                if (newMin < currentMin) {
+                    house1 = houses.get(i-1).getNumber();
+                    house2 = houses.get(i).getNumber();
+                }
+            }
+        }
+        
+        // 按升序返回房屋编号
+        List<Integer> result = new ArrayList<>();
+        result.add(Math.min(house1, house2));
+        result.add(Math.max(house1, house2));
+        return result;
+    }
+    
+    static class House {
+        private int number;
+        private int position;
+        
+        public House(int number, int position) {
+            this.number = number;
+            this.position = position;
+        }
+        
+        public int getNumber() {
+            return number;
+        }
+        
+        public int getPosition() {
+            return position;
+        }
+    }
 }`
   },
   {
@@ -5788,6 +10687,31 @@ export const examples = [
   }
   
   return maxLength;
+}
+`,
+    javaCode: `public class Solution {
+    public static int maximumSignal(int N, String s) {
+        if (N <= 2) {
+            return 0;
+        }
+        
+        int maxLength = 0;
+        int currentLength = 1;
+        
+        for (int i = 1; i < N - 1; i++) {
+            if (s.charAt(i) == s.charAt(i - 1)) {
+                currentLength++;
+            } else {
+                currentLength = 1;
+            }
+            
+            if (i < N - 1) {
+                maxLength = Math.max(maxLength, currentLength);
+            }
+        }
+        
+        return maxLength;
+    }
 }`
   },
   {
@@ -5851,6 +10775,80 @@ export const examples = [
   }
   
   return bestRoad;
+}
+`,
+    javaCode: `import java.util.ArrayList;
+import java.util.List;
+
+public class Solution {
+    public static List<Integer> maximumTollRevenue(int N, List<List<Integer>> roads) {
+        // 构建邻接表
+        List<List<Integer>> adj = new ArrayList<>();
+        for (int i = 0; i <= N; i++) {
+            adj.add(new ArrayList<>());
+        }
+        for (List<Integer> road : roads) {
+            int u = road.get(0);
+            int v = road.get(1);
+            adj.get(u).add(v);
+            adj.get(v).add(u);
+        }
+        
+        int[] sizes = new int[N + 1];
+        
+        // 计算子树大小
+        dfs(1, -1, adj, sizes);
+        
+        int maxRevenue = -1;
+        List<Integer> bestRoad = new ArrayList<>();
+        bestRoad.add(Integer.MAX_VALUE);
+        bestRoad.add(Integer.MAX_VALUE);
+        
+        // 遍历每条道路，计算其收入
+        for (List<Integer> road : roads) {
+            int u = road.get(0);
+            int v = road.get(1);
+            
+            // 计算断开后两边的子树大小
+            int sizeU = sizes[u];
+            int sizeV = N - sizeU;
+            int revenue = sizeU * sizeV;
+            
+            // 更新最大收入和最佳道路
+            List<Integer> currentRoad = new ArrayList<>();
+            currentRoad.add(Math.min(u, v));
+            currentRoad.add(Math.max(u, v));
+            
+            if (revenue > maxRevenue || (revenue == maxRevenue && isLexSmaller(currentRoad, bestRoad))) {
+                maxRevenue = revenue;
+                bestRoad = currentRoad;
+            }
+        }
+        
+        return bestRoad;
+    }
+    
+    private static int dfs(int node, int parent, List<List<Integer>> adj, int[] sizes) {
+        int size = 1;
+        for (int neighbor : adj.get(node)) {
+            if (neighbor != parent) {
+                size += dfs(neighbor, node, adj, sizes);
+            }
+        }
+        sizes[node] = size;
+        return size;
+    }
+    
+    private static boolean isLexSmaller(List<Integer> a, List<Integer> b) {
+        for (int i = 0; i < Math.min(a.size(), b.size()); i++) {
+            if (a.get(i) < b.get(i)) {
+                return true;
+            } else if (a.get(i) > b.get(i)) {
+                return false;
+            }
+        }
+        return a.size() < b.size();
+    }
 }`
   },
   {
@@ -5878,6 +10876,35 @@ export const examples = [
   }
   
   return result;
+}
+`,
+    javaCode: `import java.util.HashSet;
+import java.util.Set;
+
+public class Solution {
+    public static String removeVowels(String s) {
+        Set<Character> vowels = new HashSet<>();
+        vowels.add('a');
+        vowels.add('e');
+        vowels.add('i');
+        vowels.add('o');
+        vowels.add('u');
+        vowels.add('A');
+        vowels.add('E');
+        vowels.add('I');
+        vowels.add('O');
+        vowels.add('U');
+        
+        StringBuilder result = new StringBuilder();
+        
+        for (char c : s.toCharArray()) {
+            if (!vowels.contains(c)) {
+                result.append(c);
+            }
+        }
+        
+        return result.toString();
+    }
 }`
   },
   {
@@ -5906,6 +10933,22 @@ export const examples = [
   }
   
   return count;
+}
+`,
+    javaCode: `public class Solution {
+    public static int countDigitOccurrences(int needle, int haystack) {
+        String haystackStr = String.valueOf(haystack);
+        String needleStr = String.valueOf(needle);
+        int count = 0;
+        
+        for (char c : haystackStr.toCharArray()) {
+            if (String.valueOf(c).equals(needleStr)) {
+                count++;
+            }
+        }
+        
+        return count;
+    }
 }`
   },
   {
@@ -5922,7 +10965,81 @@ export const examples = [
         output: "1"
       }
     ],
-    code: "function minimumStraightRoutes(N, points) {\n  if (N <= 2) {\n    return 1;\n  }\n  \n  // 计算点之间的斜率，找出不同的直线\n  const lines = new Set();\n  \n  for (let i = 0; i < N; i++) {\n    for (let j = i + 1; j < N; j++) {\n      const x1 = points[i][0];\n      const y1 = points[i][1];\n      const x2 = points[j][0];\n      const y2 = points[j][1];\n      \n      // 计算斜率\n      let slope, intercept;\n      if (x2 - x1 === 0) {\n        // 垂直直线\n        slope = 'inf';\n        intercept = x1;\n      } else {\n        slope = (y2 - y1) / (x2 - x1);\n        intercept = y1 - slope * x1;\n      }\n      \n      // 用字符串表示直线\n      const line = slope + ',' + intercept;\n      lines.add(line);\n    }\n  }\n  \n  return lines.size;\n}"
+    code: `function minimumStraightRoutes(N, points) {
+  if (N <= 2) {
+    return 1;
+  }
+  
+  // 计算点之间的斜率，找出不同的直线
+  const lines = new Set();
+  
+  for (let i = 0; i < N; i++) {
+    for (let j = i + 1; j < N; j++) {
+      const x1 = points[i][0];
+      const y1 = points[i][1];
+      const x2 = points[j][0];
+      const y2 = points[j][1];
+      
+      // 计算斜率
+      let slope, intercept;
+      if (x2 - x1 === 0) {
+        // 垂直直线
+        slope = 'inf';
+        intercept = x1;
+      } else {
+        slope = (y2 - y1) / (x2 - x1);
+        intercept = y1 - slope * x1;
+      }
+      
+      // 用字符串表示直线
+      const line = slope + ',' + intercept;
+      lines.add(line);
+    }
+  }
+  
+  return lines.size;
+}
+`,
+    javaCode: `import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
+public class Solution {
+    public static int minimumStraightRoutes(int N, List<int[]> points) {
+        if (N <= 2) {
+            return 1;
+        }
+        
+        // 计算点之间的斜率，找出不同的直线
+        Set<String> lines = new HashSet<>();
+        
+        for (int i = 0; i < N; i++) {
+            for (int j = i + 1; j < N; j++) {
+                int[] p1 = points.get(i);
+                int[] p2 = points.get(j);
+                int x1 = p1[0];
+                int y1 = p1[1];
+                int x2 = p2[0];
+                int y2 = p2[1];
+                
+                // 计算斜率
+                String line;
+                if (x2 - x1 == 0) {
+                    // 垂直直线
+                    line = "inf," + x1;
+                } else {
+                    double slope = (double) (y2 - y1) / (x2 - x1);
+                    double intercept = y1 - slope * x1;
+                    line = slope + "," + intercept;
+                }
+                
+                lines.add(line);
+            }
+        }
+        
+        return lines.size();
+    }
+}`
   },
   {
     id: 'example-125',
@@ -6137,6 +11254,69 @@ function isPerfectSquare(n) {
   }
   
   return bestArrangement;
+}`,
+    javaCode: `import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+public class Solution {
+    public static List<Integer> maximumAlumniAttendance(int num, List<Integer> alumni) {
+        // 构建喜欢关系的映射
+        Map<Integer, Integer> likeMap = new HashMap<>();
+        for (int i = 0; i < num; i++) {
+            likeMap.put(i, alumni.get(i) - 1); // 转换为0-based索引
+        }
+        
+        // 尝试所有可能的起始点，找到最长的环
+        int maxLength = 0;
+        List<Integer> bestArrangement = new ArrayList<>();
+        
+        for (int start = 0; start < num; start++) {
+            Set<Integer> visited = new HashSet<>();
+            List<Integer> current = new ArrayList<>();
+            int currentAlumni = start;
+            
+            while (!visited.contains(currentAlumni)) {
+                visited.add(currentAlumni);
+                current.add(currentAlumni + 1); // 转换回1-based索引
+                
+                // 检查下一个校友是否喜欢当前校友
+                Integer nextAlumni = likeMap.get(currentAlumni);
+                if (nextAlumni == null || !likeMap.containsKey(nextAlumni)) {
+                    break;
+                }
+                
+                currentAlumni = nextAlumni;
+            }
+            
+            // 检查是否形成环
+            if (current.size() > 0 && currentAlumni == start) {
+                if (current.size() > maxLength || (current.size() == maxLength && isLexSmaller(current, bestArrangement))) {
+                    maxLength = current.size();
+                    bestArrangement = new ArrayList<>(current);
+                }
+            }
+        }
+        
+        return bestArrangement;
+    }
+    
+    private static boolean isLexSmaller(List<Integer> a, List<Integer> b) {
+        if (b.isEmpty()) {
+            return true;
+        }
+        for (int i = 0; i < Math.min(a.size(), b.size()); i++) {
+            if (a.get(i) < b.get(i)) {
+                return true;
+            } else if (a.get(i) > b.get(i)) {
+                return false;
+            }
+        }
+        return a.size() < b.size();
+    }
 }`
   },
   {
@@ -6200,6 +11380,63 @@ function isPerfectSquare(n) {
   }
   
   return maxStars;
+}`,
+    javaCode: `import java.util.List;
+
+public class Solution {
+    public static int maximizeStarRating(int horrorCount, List<int[]> horrorBooks, int sciFiCount, List<int[]> sciFiBooks, int budget) {
+        // 状态: dp[mask][money] = max stars
+        // mask: 0b00 (no books), 0b01 (horror), 0b10 (sci-fi), 0b11 (both)
+        int[][] dp = new int[4][budget + 1];
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j <= budget; j++) {
+                dp[i][j] = -1;
+            }
+        }
+        dp[0][0] = 0;
+        
+        // 处理恐怖书籍
+        for (int[] book : horrorBooks) {
+            int price = book[0];
+            int stars = book[1];
+            for (int m = budget; m >= price; m--) {
+                for (int mask = 0; mask < 4; mask++) {
+                    if (dp[mask][m - price] != -1) {
+                        int newMask = mask | 1; // 设置恐怖书籍位
+                        if (dp[newMask][m] < dp[mask][m - price] + stars) {
+                            dp[newMask][m] = dp[mask][m - price] + stars;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 处理科幻书籍
+        for (int[] book : sciFiBooks) {
+            int price = book[0];
+            int stars = book[1];
+            for (int m = budget; m >= price; m--) {
+                for (int mask = 0; mask < 4; mask++) {
+                    if (dp[mask][m - price] != -1) {
+                        int newMask = mask | 2; // 设置科幻书籍位
+                        if (dp[newMask][m] < dp[mask][m - price] + stars) {
+                            dp[newMask][m] = dp[mask][m - price] + stars;
+                        }
+                    }
+                }
+            }
+        }
+        
+        // 找到同时购买了两种书籍的最大星级
+        int maxStars = -1;
+        for (int m = 0; m <= budget; m++) {
+            if (dp[3][m] > maxStars) {
+                maxStars = dp[3][m];
+            }
+        }
+        
+        return maxStars;
+    }
 }`
   },
   {
@@ -6226,6 +11463,24 @@ function isPerfectSquare(n) {
   
   // 返回第K小的元素（注意索引是K-1）
   return prices[K - 1];
+}`,
+    javaCode: `import java.util.Arrays;
+import java.util.List;
+
+public class Solution {
+    public static int findKthSmallestStockPrice(int N, List<Integer> prices, int K) {
+        // 将List转换为数组
+        int[] priceArray = new int[prices.size()];
+        for (int i = 0; i < prices.size(); i++) {
+            priceArray[i] = prices.get(i);
+        }
+        
+        // 对价格进行排序
+        Arrays.sort(priceArray);
+        
+        // 返回第K小的元素（注意索引是K-1）
+        return priceArray[K - 1];
+    }
 }`
   },
   {
@@ -6261,6 +11516,23 @@ function isPerfectSquare(n) {
   const maxPossible = Math.min(total, 2 * sumOthers + 1);
   
   return maxPossible;
+}`,
+    javaCode: `import java.util.List;
+import java.util.stream.Collectors;
+
+public class Solution {
+    public static int maximumWorkingDays(int num, List<Integer> counts) {
+        int total = counts.stream().mapToInt(Integer::intValue).sum();
+        int maxCount = counts.stream().max(Integer::compare).orElse(0);
+        int sumOthers = total - maxCount;
+        
+        // 最大工作天数受两个因素限制：
+        // 1. 所有城镇的总工作天数之和
+        // 2. 最大的单个城镇工作天数不能超过其他所有城镇工作天数之和加1
+        int maxPossible = Math.min(total, 2 * sumOthers + 1);
+        
+        return maxPossible;
+    }
 }`
   },
   {
@@ -6307,6 +11579,34 @@ function isPerfectSquare(n) {
   }
   
   return '';
+}`,
+    javaCode: `import java.util.HashMap;
+import java.util.Map;
+
+public class Solution {
+    public static String findLostCharacter(String stringSent, String stringRec) {
+        // 使用哈希表统计字符出现次数
+        Map<Character, Integer> charCount = new HashMap<>();
+        
+        // 统计发送字符串中的字符
+        for (char c : stringSent.toCharArray()) {
+            charCount.put(c, charCount.getOrDefault(c, 0) + 1);
+        }
+        
+        // 减去接收字符串中的字符
+        for (char c : stringRec.toCharArray()) {
+            charCount.put(c, charCount.get(c) - 1);
+        }
+        
+        // 找到出现次数为1的字符
+        for (Map.Entry<Character, Integer> entry : charCount.entrySet()) {
+            if (entry.getValue() == 1) {
+                return String.valueOf(entry.getKey());
+            }
+        }
+        
+        return "";
+    }
 }`
   },
   {
@@ -6359,6 +11659,31 @@ function isPerfectSquare(n) {
   }
   
   return count;
-}`
-  }
-];
+}`,
+    javaCode: `public class Solution {
+    public static int countSubstringOccurrences(String parent, String sub) {
+        if (sub.length() == 0) {
+            return 0;
+        }
+        
+        // 转换为小写以忽略大小写
+        String parentLower = parent.toLowerCase();
+        String subLower = sub.toLowerCase();
+        
+        int count = 0;
+        int index = 0;
+        
+        while (index < parentLower.length()) {
+            // 查找子字符串的位置
+            int foundIndex = parentLower.indexOf(subLower, index);
+            if (foundIndex == -1) {
+                break;
+            }
+            count++;
+            // 从找到的位置的下一个字符开始继续查找
+            index = foundIndex + 1;
+        }
+        
+        return count;
+    }
+}`}]

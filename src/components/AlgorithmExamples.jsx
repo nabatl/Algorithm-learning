@@ -6,6 +6,7 @@ function AlgorithmExamples() {
   const [readExamples, setReadExamples] = useState(new Set())
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [searchKeyword, setSearchKeyword] = useState('')
+  const [selectedLanguage, setSelectedLanguage] = useState('javascript')
 
   // 从localStorage加载已阅读的题目
   useEffect(() => {
@@ -130,7 +131,22 @@ function AlgorithmExamples() {
             
             <div className="example-code">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                <h5>JavaScript 代码：</h5>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                  <h5>代码：</h5>
+                  <select 
+                    value={selectedLanguage} 
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    style={{
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      border: '1px solid #ddd',
+                      fontSize: '0.8rem'
+                    }}
+                  >
+                    <option value="javascript">JavaScript</option>
+                    <option value="java">Java</option>
+                  </select>
+                </div>
                 <button 
                   onClick={() => {
                     const codeElement = document.querySelector('.example-code pre');
@@ -299,7 +315,7 @@ function AlgorithmExamples() {
                   全屏展示
                 </button>
               </div>
-              <pre>{selectedExample.code}</pre>
+              <pre>{selectedLanguage === 'javascript' ? selectedExample.code : selectedExample.javaCode}</pre>
             </div>
             
             <div className="navigation-buttons">
