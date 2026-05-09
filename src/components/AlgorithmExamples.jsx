@@ -7,6 +7,8 @@ function AlgorithmExamples() {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [searchKeyword, setSearchKeyword] = useState('')
   const [selectedLanguage, setSelectedLanguage] = useState('javascript')
+  const [showVirtualKeyboard, setShowVirtualKeyboard] = useState(false)
+  const [isUpperCase, setIsUpperCase] = useState(false)
 
   // 从localStorage加载已阅读的题目
   useEffect(() => {
@@ -35,6 +37,21 @@ function AlgorithmExamples() {
     }, 100);
   }
 
+  // 虚拟键盘按键处理
+  const handleKeyPress = (key) => {
+    if (key === 'backspace') {
+      setSearchKeyword(prev => prev.slice(0, -1))
+    } else if (key === 'clear') {
+      setSearchKeyword('')
+    } else if (key === 'space') {
+      setSearchKeyword(prev => prev + ' ')
+    } else if (key === 'enter') {
+      // 可以添加回车后的逻辑，比如搜索
+    } else {
+      setSearchKeyword(prev => prev + key)
+    }
+  }
+
   // 过滤示例列表
   const filteredExamples = examples.filter(example => 
     example.englishDescription.toLowerCase().includes(searchKeyword.toLowerCase())
@@ -54,8 +71,68 @@ function AlgorithmExamples() {
               placeholder="搜索英文描述..." 
               value={searchKeyword}
               onChange={(e) => setSearchKeyword(e.target.value)}
+              ref={(input) => { window.searchInput = input; }}
             />
+            <button 
+              onClick={() => setShowVirtualKeyboard(!showVirtualKeyboard)}
+              className="keyboard-button"
+            >
+              🖥️ 虚拟键盘
+            </button>
           </div>
+          {showVirtualKeyboard && (
+            <div className="virtual-keyboard">
+              <div className="keyboard-row">
+                {['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'].map(key => (
+                  <button key={key} className="keyboard-key" onClick={() => handleKeyPress(key)}>
+                    {key}
+                  </button>
+                ))}
+                <button className="keyboard-key keyboard-key-wide" onClick={() => handleKeyPress('backspace')}>
+                  ⌫
+                </button>
+              </div>
+              <div className="keyboard-row">
+                {['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'].map(key => (
+                  <button key={key} className="keyboard-key" onClick={() => handleKeyPress(isUpperCase ? key.toUpperCase() : key)}>
+                    {isUpperCase ? key.toUpperCase() : key}
+                  </button>
+                ))}
+                <button className="keyboard-key keyboard-key-wide" onClick={() => handleKeyPress('clear')}>
+                  ✕
+                </button>
+              </div>
+              <div className="keyboard-row">
+                <button 
+                  className={`keyboard-key keyboard-key-wide shift-key ${isUpperCase ? 'active' : ''}`} 
+                  onClick={() => setIsUpperCase(!isUpperCase)}
+                >
+                  ↑ Shift
+                </button>
+                {['a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l'].map(key => (
+                  <button key={key} className="keyboard-key" onClick={() => handleKeyPress(isUpperCase ? key.toUpperCase() : key)}>
+                    {isUpperCase ? key.toUpperCase() : key}
+                  </button>
+                ))}
+                <button className="keyboard-key keyboard-key-wide" onClick={() => handleKeyPress('enter')}>
+                  ↵
+                </button>
+              </div>
+              <div className="keyboard-row">
+                <button className="keyboard-key keyboard-key-wide" onClick={() => handleKeyPress('space')}>
+                  ␣
+                </button>
+                {['z', 'x', 'c', 'v', 'b', 'n', 'm'].map(key => (
+                  <button key={key} className="keyboard-key" onClick={() => handleKeyPress(isUpperCase ? key.toUpperCase() : key)}>
+                    {isUpperCase ? key.toUpperCase() : key}
+                  </button>
+                ))}
+                <button className="keyboard-key keyboard-key-wide" onClick={() => setShowVirtualKeyboard(false)}>
+                  ✕
+                </button>
+              </div>
+            </div>
+          )}
           {filteredExamples.map((example) => {
             const originalIndex = examples.indexOf(example);
             return (
